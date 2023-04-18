@@ -1,0 +1,28 @@
+1) per calcolare le 2 percentuali si devono prima o dopo
+	del trattamento dei file in modo adeguato?
+	(eliminare parole, trattare la punteggiatura, ecc)
+
+	prima modficare e poi fare il resto
+
+2) la struttura dati da utilizzare prima di passare
+	ai database è a libera scelta?
+	
+	libera scelta, però giustificarla
+
+3) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

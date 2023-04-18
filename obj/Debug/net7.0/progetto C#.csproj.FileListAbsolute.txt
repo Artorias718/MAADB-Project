@@ -1,0 +1,15 @@
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\bin\Debug\net7.0\progetto C#.exe
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\bin\Debug\net7.0\progetto C#.deps.json
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\bin\Debug\net7.0\progetto C#.runtimeconfig.json
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\bin\Debug\net7.0\progetto C#.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\bin\Debug\net7.0\progetto C#.pdb
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.csproj.AssemblyReference.cache
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.AssemblyInfoInputs.cache
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.AssemblyInfo.cs
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.csproj.CoreCompileInputs.cache
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\refint\progetto C#.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.pdb
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\progetto C#.genruntimeconfig.cache
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto C#\obj\Debug\net7.0\ref\progetto C#.dll

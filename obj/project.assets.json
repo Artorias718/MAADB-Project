@@ -1,0 +1,112 @@
+{
+  "version": 3,
+  "targets": {
+    "net7.0": {
+      "OpenNLP/1.3.5": {
+        "type": "package",
+        "compile": {
+          "lib/net45/OpenNLP.dll": {},
+          "lib/net45/SharpEntropy.dll": {}
+        },
+        "runtime": {
+          "lib/net45/OpenNLP.dll": {},
+          "lib/net45/SharpEntropy.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OpenNLP/1.3.5": {
+      "sha512": "r+nfFaKo7f8H+GiylyM9TAlvWQEBiHSF+DzDChe13ftDBtBjo/t0Fc/hWNiRn3cqNJYgKc0u+pPD+QtH3Dgk+w==",
+      "type": "package",
+      "path": "opennlp/1.3.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/OpenNLP.dll",
+        "lib/net45/SharpEntropy.dll",
+        "opennlp.1.3.5.nupkg.sha512",
+        "opennlp.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net7.0": [
+      "OpenNLP >= 1.3.5"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\HP\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto C#\\progetto C#.csproj",
+      "projectName": "progetto C#",
+      "projectPath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto C#\\progetto C#.csproj",
+      "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto C#\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net7.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net7.0": {
+        "targetAlias": "net7.0",
+        "dependencies": {
+          "OpenNLP": {
+            "target": "Package",
+            "version": "[1.3.5, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Il pacchetto 'OpenNLP 1.3.5' è stato ripristinato mediante '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' e non mediante il framework di destinazione del progetto 'net7.0'. Questo pacchetto potrebbe non essere completamente compatibile con il progetto.",
+      "libraryId": "OpenNLP",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    }
+  ]
+}

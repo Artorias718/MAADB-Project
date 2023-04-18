@@ -1,0 +1,31 @@
+OUTPUT PROGETTO:
+
+    1) Creare una WORD CLOUD per le parole più presenti nei vari sentimenti e per le emoji ed emoticons;
+
+    2) Creare istogramma per ciascun sentimento con le percentuali delle parole delle risorse lessicali presenti nei tweet;
+
+    3) Raccogliere le parole "nuove" presenti nei tweet ma non nelle risorse lessicali:
+        così abbiamo costruito una nuova risorsa lessicale, adatta a rappresentare i tweet.
+
+DA FARE:
+
+    1) scegliere e creare struttura dati per memorizzare i dati relativi ai tweet e alle risorse lessicali;
+
+    2) creare strutture nei database;
+
+    3) collegare progetto ai database;
+
+    4) gestire i tweet e le parole lessicali
+
+    5) trovare un libreria esterna per il NPL (Natural Language Processing)
+
+    6) 
+
+    7) 
+
+    8) 
+
+    9) 
+
+
+    

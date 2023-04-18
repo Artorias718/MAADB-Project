@@ -1,0 +1,1 @@
+//composizione della struttura dati

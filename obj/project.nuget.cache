@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "dgSpecHash": "+OR7F69xYYBhA5alek+zqYeSEcUb//9IoHiExF6l5WRatghmiYTyUFvXjGwitF5YnoDwpFrIQp8Edp9UekFxZw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto C#\\progetto C#.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\HP\\.nuget\\packages\\opennlp\\1.3.5\\opennlp.1.3.5.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Il pacchetto 'OpenNLP 1.3.5' è stato ripristinato mediante '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' e non mediante il framework di destinazione del progetto 'net7.0'. Questo pacchetto potrebbe non essere completamente compatibile con il progetto.",
+      "libraryId": "OpenNLP",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    }
+  ]
+}
