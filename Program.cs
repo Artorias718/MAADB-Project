@@ -8,13 +8,14 @@ namespace HelloWorld
         {
             HashSet<string> posemoticons = new HashSet<string>(File.ReadAllLines("Risorse lessicali/posemoticons.txt"));
             HashSet<string> negemoticons = new HashSet<string>(File.ReadAllLines("Risorse lessicali/negemoticons.txt"));
-            Parsing.readTwitter("fare.txt");
+            Parsing.readTwitter("fare.txt", posemoticons, negemoticons);
+
         }
 
     }
     public static class Parsing
     {
-        public static void readTwitter(string nameFile)
+        public static void readTwitter(string nameFile, HashSet<String> posemoticons, HashSet<String> negemoticons)
         {
             String line;
             try
@@ -46,12 +47,25 @@ namespace HelloWorld
                     tail = j;
                     Console.WriteLine("Tail: " + j);
 
-                    String res = line.Remove(head + 1, tail - head);
-                    Console.WriteLine(res);
-                    sr.Close();
+                    //salva la parola che stiamo considerando, per controllare se è un emoji
+                    String selected_word = line.Substring(head + 1, tail - head);
 
-                    File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
-                    line = res;
+                    //conftronta ogni emoji con la parola, sia per le emoji positive che per quelle negative
+                    foreach (String emoji in posemoticons.Union(negemoticons))
+                    {
+                        if (!selected_word.Equals(emoji))
+                        {
+                            //se la parola NON è un emoji, la rimuove 
+                            String res = line.Remove(head + 1, tail - head);
+                            sr.Close();
+
+                            File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
+                            line = res; //salva la nuova frase per continuare a iterare
+                            break; //appena trova una corrispondenza con una emoji esce dal foreach
+                        }
+
+
+                    }
 
                     i = line.IndexOf("_", i + 1);
                 }
