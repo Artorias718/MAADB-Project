@@ -1,5 +1,6 @@
 using System.IO;
 
+
 namespace HelloWorld
 {
     class Program
@@ -8,15 +9,24 @@ namespace HelloWorld
         {
             HashSet<string> posemoticons = new HashSet<string>(File.ReadAllLines("Risorse lessicali/posemoticons.txt"));
             HashSet<string> negemoticons = new HashSet<string>(File.ReadAllLines("Risorse lessicali/negemoticons.txt"));
-            Parsing.readTwitter("fare.txt", posemoticons, negemoticons);
+
+            string[] splittedTextPos = Utils.ExtractEmoji("Risorse lessicali/posemoticons.txt");
+            string[] splittedTextNeg = Utils.ExtractEmoji("Risorse lessicali/negemoticons.txt");
+            string[] splittedText = splittedTextPos.Concat(splittedTextNeg).ToArray();
+
+            Parsing.readTwitter("fare.txt", splittedText);
+
+
 
         }
 
     }
+
     public static class Parsing
     {
-        public static void readTwitter(string nameFile, HashSet<String> posemoticons, HashSet<String> negemoticons)
+        public static void readTwitter(string nameFile, string[] splittedText)
         {
+
             String line;
             try
             {
@@ -48,24 +58,32 @@ namespace HelloWorld
                     Console.WriteLine("Tail: " + j);
 
                     //salva la parola che stiamo considerando, per controllare se è un emoji
-                    String selected_word = line.Substring(head + 1, tail - head);
+                    String selected_word = line.Substring(head + 1, tail - head - 1);
+
+
+                    bool isEmoji = false;
 
                     //conftronta ogni emoji con la parola, sia per le emoji positive che per quelle negative
-                    foreach (String emoji in posemoticons.Union(negemoticons))
+                    foreach (String emoji in splittedText)
                     {
-                        if (!selected_word.Equals(emoji))
+                        // Console.WriteLine("Confronta " + selected_word + " con " + emoji + " Risultato: " + selected_word.Equals(emoji));
+                        if (selected_word.Equals(emoji))
                         {
-                            //se la parola NON è un emoji, la rimuove 
-                            String res = line.Remove(head + 1, tail - head);
-                            sr.Close();
+                            isEmoji = true;
 
-                            File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
-                            line = res; //salva la nuova frase per continuare a iterare
-                            break; //appena trova una corrispondenza con una emoji esce dal foreach
                         }
 
-
                     }
+
+                    if (!isEmoji)
+                    {
+                        String res = line.Remove(head + 1, tail - head);
+                        sr.Close();
+
+                        File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
+                        line = res; //salva la nuova frase per continuare a iterare
+                    }
+
 
                     i = line.IndexOf("_", i + 1);
                 }
