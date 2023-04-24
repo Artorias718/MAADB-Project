@@ -34,6 +34,23 @@ namespace HelloWorld
             return splittedText;
         }
 
+        public static void StampaDizionario(Dictionary<string, Dictionary<string, int>> d)
+        {
+            foreach (var kv in d)
+            {
+                Console.WriteLine("Lemma: " + kv.Key);
+                Console.WriteLine("Risorse:");
+                foreach (var risorsa in kv.Value)
+                {
+
+                    Console.WriteLine(risorsa.Key + ": " + risorsa.Value);
+
+                }
+                Console.WriteLine();
+            }
+
+
+        }
 
     }
 }

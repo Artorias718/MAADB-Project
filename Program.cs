@@ -13,8 +13,6 @@ namespace HelloWorld
 
             //Parsing.readTwitter("fare.txt", splittedText);
 
-
-            Dictionary<string, string> lemmaDictionary = new Dictionary<string, string>();
             //per ogni emozione accede a ogni risorsa (EMOsn, NRC ecc.)
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
@@ -66,7 +64,7 @@ namespace HelloWorld
                 }
                 //var lemmiList = lemmi.Select(kv => new { lemma = kv.Key, risorse = kv.Value }).ToList();
 
-                foreach (var kv in lemmi)
+                /*foreach (var kv in lemmi)
                 {
                     Console.WriteLine("Lemma: " + kv.Key);
                     Console.WriteLine("Risorse:");
@@ -77,7 +75,8 @@ namespace HelloWorld
 
                     }
                     Console.WriteLine();
-                }
+                }*/
+                Utils.StampaDizionario(lemmi);
 
 
             }
