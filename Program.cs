@@ -1,6 +1,5 @@
 using System.IO;
 
-
 namespace HelloWorld
 {
     class Program
@@ -11,12 +10,19 @@ namespace HelloWorld
             string[] splittedTextNeg = Utils.ExtractEmoji("Risorse lessicali/negemoticons.txt");
             string[] splittedText = splittedTextPos.Concat(splittedTextNeg).ToArray();
 
+            Utils.UploadLemmiOfLexres();
+
             //Parsing.readTwitter("fare.txt", splittedText);
 
             //per ogni emozione accede a ogni risorsa (EMOsn, NRC ecc.)
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
                 //Console.WriteLine(em);
+                /*
+                    string 1: parola del sentimento che stiamo analizzando
+                    string 2: nome risorsa del file (EmoSN, NRC, sentisense)
+                    int: occorenze della parola
+                */
                 Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>();
                 string startPath = $"Risorse lessicali/{em}/";
                 string endPath = $"_{em}.txt";
@@ -76,11 +82,10 @@ namespace HelloWorld
                     }
                     Console.WriteLine();
                 }*/
-                Utils.StampaDizionario(lemmi);
+                //Utils.StampaDizionario(lemmi);
 
 
             }
-
         }
 
         public static class Parsing
