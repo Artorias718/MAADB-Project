@@ -4957,7 +4957,7 @@
   },
   "projectFileDependencyGroups": {
     "net7.0": [
-      "MySql.Data >= 8.0.0"
+      "MySql.Data >= 8.0.11"
     ]
   },
   "packageFolders": {
@@ -4999,7 +4999,7 @@
         "dependencies": {
           "MySql.Data": {
             "target": "Package",
-            "version": "[8.0.0, )"
+            "version": "[8.0.11, )"
           }
         },
         "imports": [
@@ -5021,17 +5021,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "progetto C# dipende da MySql.Data (>= 8.0.0) ma non è stato possibile trovare MySql.Data 8.0.0. È stata risolta una migliore corrispondenza approssimativa di MySql.Data 8.0.11.",
-      "libraryId": "MySql.Data",
-      "targetGraphs": [
-        "net7.0"
-      ]
-    }
-  ]
+  }
 }

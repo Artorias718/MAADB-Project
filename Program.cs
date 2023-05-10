@@ -9,8 +9,12 @@ namespace HelloWorld
             string[] splittedTextPos = Utils.ExtractEmoji("Risorse lessicali/posemoticons.txt");
             string[] splittedTextNeg = Utils.ExtractEmoji("Risorse lessicali/negemoticons.txt");
             string[] splittedText = splittedTextPos.Concat(splittedTextNeg).ToArray();
-
-            Utils.UploadLemmiOfLexres();
+            /*
+            string 1: parola del sentimento che stiamo analizzando
+            string 2: nome risorsa del file (EmoSN, NRC, sentisense)
+            int: occorenze della parola
+            */
+            Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>();
 
             //Parsing.readTwitter("fare.txt", splittedText);
 
@@ -18,12 +22,7 @@ namespace HelloWorld
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
                 //Console.WriteLine(em);
-                /*
-                    string 1: parola del sentimento che stiamo analizzando
-                    string 2: nome risorsa del file (EmoSN, NRC, sentisense)
-                    int: occorenze della parola
-                */
-                Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>();
+                
                 string startPath = $"Risorse lessicali/{em}/";
                 string endPath = $"_{em}.txt";
 
@@ -68,6 +67,8 @@ namespace HelloWorld
                     }
 
                 }
+
+                
                 //var lemmiList = lemmi.Select(kv => new { lemma = kv.Key, risorse = kv.Value }).ToList();
 
                 /*foreach (var kv in lemmi)
@@ -86,6 +87,8 @@ namespace HelloWorld
 
 
             }
+
+            Utils.UploadLemmiOfLexres(lemmi);
         }
 
         public static class Parsing

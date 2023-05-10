@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "AGLLb+QqrZAThMSP66wA+UJKb+tVU5ZScFn+X6SHr4uZSRij4EYDPOrcT8Ef4Xs3rmWGelWzhsr3H8mScbNBhg==",
+  "dgSpecHash": "dALe0YnMk56mMRGdB2PTrUehb2oH4NwWVy/CkHkDr8w9MuJvIxyqNIwOrcSULwgYX5WfWE4UKtOkW+ZbiU9DUA==",
   "success": true,
   "projectFilePath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\progetto C#.csproj",
   "expectedPackageFiles": [
@@ -86,16 +86,5 @@
     "C:\\Users\\HP\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
     "C:\\Users\\HP\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "progetto C# dipende da MySql.Data (>= 8.0.0) ma non è stato possibile trovare MySql.Data 8.0.0. È stata risolta una migliore corrispondenza approssimativa di MySql.Data 8.0.11.",
-      "libraryId": "MySql.Data",
-      "targetGraphs": [
-        "net7.0"
-      ]
-    }
-  ]
+  "logs": []
 }
