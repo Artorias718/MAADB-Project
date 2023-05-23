@@ -49,22 +49,22 @@ public class Utils
     }
 
 
-/*
-INSERT INTO table_name (column1, column2, column3, ...)
-VALUES (value1, value2, value3, ...);
-*/
+    /*
+    INSERT INTO table_name (column1, column2, column3, ...)
+    VALUES (value1, value2, value3, ...);
+    */
 
     //string emozione, List<Dictionary<string, int>> lemmi, bool dropIfNotEmpty
     public static void UploadLemmiOfLexres(Dictionary<string, Dictionary<string, int>> lemmi)
     {
-        MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+        MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
         MySqlCommand cmd = new MySqlCommand();
         cmd.Connection = conn;
         conn.Open();
-        
+
         // Eseguire una query per verificare se la tabella esiste
         cmd.CommandText = $"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{conn.Database}' AND table_name = 'outer_dict'";
-        
+
         int tableCount = Convert.ToInt32(cmd.ExecuteScalar());
 
         if (tableCount > 0)
@@ -77,23 +77,73 @@ VALUES (value1, value2, value3, ...);
 
             cmd.CommandText = "CREATE TABLE outer_dict (" +
                             "id INT NOT NULL AUTO_INCREMENT," +
+                            "lemma VARCHAR(255) NOT NULL," +
+                            "sentimento VARCHAR(255) NOT NULL," +
                             "PRIMARY KEY (id)" +
                             ");" +
 
                             "CREATE TABLE inner_dict (" +
                             "id INT NOT NULL AUTO_INCREMENT," +
-                            "key_name VARCHAR(255) NOT NULL," +
+                            "risorsa VARCHAR(255) NOT NULL," +
                             "value INT," +
-                            "outer_dict_id INT NOT NULL," +
+                            "lemma_id INT NOT NULL," +
                             "PRIMARY KEY (id)," +
-                            "FOREIGN KEY (outer_dict_id) REFERENCES outer_dict(id)" +
+                            "FOREIGN KEY (lemma_id) REFERENCES outer_dict(id)" +
                             ");";
-            
+
             cmd.ExecuteNonQuery();
         }
 
+
+        string outerDictQuery = "INSERT INTO outer_dict (lemma, sentimento) VALUES (@lemma, @sentimento);";
+        string innerDictQuery = "INSERT INTO inner_dict (risorsa, value, lemma_id) VALUES (@risorsa, @value, @lemmaId);";
+        string getIdQuery = "SELECT max(id) from outer_dict;";
+
+        int lemmaID = 0;
+
+        using (MySqlCommand command = new MySqlCommand(outerDictQuery, conn))
+        {
+
+
+            foreach (KeyValuePair<string, Dictionary<string, int>> outerPair in lemmi)
+
+            {
+                command.Parameters.AddWithValue("@sentimento", "esempio_sentimento");
+                command.Parameters.AddWithValue("@lemma", outerPair.Key);
+                command.ExecuteNonQuery();
+                using (MySqlCommand command3 = new MySqlCommand(getIdQuery, conn))
+                {
+                    lemmaID = Convert.ToInt32(command3.ExecuteScalar());
+                    Console.WriteLine("**************************" + lemmaID);
+                }
+                command.Parameters.RemoveAt("@lemma");
+                command.Parameters.RemoveAt("@sentimento");
+
+
+                foreach (KeyValuePair<string, int> innerPair in outerPair.Value)
+                {
+
+                    using (MySqlCommand command2 = new MySqlCommand(innerDictQuery, conn))
+                    {
+                        command2.Parameters.AddWithValue("@risorsa", innerPair.Key);
+                        command2.Parameters.AddWithValue("@value", innerPair.Value);
+                        command2.Parameters.AddWithValue("@lemmaId", lemmaID); // L'id del lemma correlato in outer_dict
+                        command2.ExecuteNonQuery();
+
+                        //command2.Parameters.RemoveAt("@risorsa");
+                        //command2.Parameters.RemoveAt("@value");
+                        //command2.Parameters.RemoveAt("@lemmaId");
+                    }
+
+
+                }
+            }
+        }
+
+
+
         // Insert the data into the database
-        string insertOuterDictQuery = "INSERT INTO outer_dict () VALUES (); SELECT LAST_INSERT_ID();";
+        /*string insertOuterDictQuery = "INSERT INTO outer_dict () VALUES (); SELECT LAST_INSERT_ID();";
         using (MySqlCommand outerDictCommand = new MySqlCommand(insertOuterDictQuery, conn))
         {
             // Execute the query to insert the outer_dict record and retrieve the inserted ID
@@ -129,7 +179,10 @@ VALUES (value1, value2, value3, ...);
                     }
                 }
             }
-        }
+        }*/
+
+
+
 
         conn.Close();
 

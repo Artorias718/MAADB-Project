@@ -50,3 +50,25 @@ C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\System.Securi
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\System.Security.Permissions.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\obj\Debug\net7.0\progetto C#.csproj.CopyComplete
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\progetto C#.exe
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\progetto C#.deps.json
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\progetto C#.runtimeconfig.json
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\progetto C#.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\progetto C#.pdb
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\Google.Protobuf.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\MySql.Data.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\System.Configuration.ConfigurationManager.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\System.Security.Permissions.dll
+C:\Users\harbi\Desktop\fff\bin\Debug\net7.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.csproj.AssemblyReference.cache
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.AssemblyInfoInputs.cache
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.AssemblyInfo.cs
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.csproj.CoreCompileInputs.cache
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.csproj.CopyComplete
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.dll
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\refint\progetto C#.dll
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.pdb
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\progetto C#.genruntimeconfig.cache
+C:\Users\harbi\Desktop\fff\obj\Debug\net7.0\ref\progetto C#.dll
