@@ -7,6 +7,7 @@ public enum Emotions
     disgust,
     fear,
     joy,
+    surprise,
     sadness,
     trust
 }

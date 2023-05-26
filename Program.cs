@@ -9,11 +9,14 @@ namespace HelloWorld
             string[] splittedTextPos = Utils.ExtractEmoji("Risorse lessicali/posemoticons.txt");
             string[] splittedTextNeg = Utils.ExtractEmoji("Risorse lessicali/negemoticons.txt");
             string[] splittedText = splittedTextPos.Concat(splittedTextNeg).ToArray();
+
+            //Array di dizionari dei sentimenti
+            Dictionary<string, Dictionary<string, Dictionary<string, int>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, int>>>();
             /*
-            string 1: parola del sentimento che stiamo analizzando
-            string 2: nome risorsa del file (EmoSN, NRC, sentisense)
-            int: occorenze della parola
-            */
+                        string 1: parola del sentimento che stiamo analizzando
+                        string 2: nome risorsa del file (EmoSN, NRC, sentisense)
+                        int: occorenze della parola
+                        */
             Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>();
 
             //Parsing.readTwitter("fare.txt", splittedText);
@@ -21,8 +24,7 @@ namespace HelloWorld
             //per ogni emozione accede a ogni risorsa (EMOsn, NRC ecc.)
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
-                //Console.WriteLine(em);
-                
+                //Console.WriteLine(em);                
                 string startPath = $"Risorse lessicali/{em}/";
                 string endPath = $"_{em}.txt";
 
@@ -50,6 +52,8 @@ namespace HelloWorld
                                 // Rimuovi le parole composte
                                 if (!lemma.Contains("_"))
                                 {
+                                    //Console.WriteLine("ID" + lemmiArray[(int)em]);
+
                                     Dictionary<string, int> l = lemmi.ContainsKey(lemma) ? lemmi[lemma] : new Dictionary<string, int>();
                                     l[resString] = 1;
                                     lemmi[lemma] = l;
@@ -65,30 +69,13 @@ namespace HelloWorld
                         // Continua se il file non è stato trovato
                         continue;
                     }
+                    lemmiArray[em.ToString()] = lemmi;
 
                 }
-
-                
-                //var lemmiList = lemmi.Select(kv => new { lemma = kv.Key, risorse = kv.Value }).ToList();
-
-                /*foreach (var kv in lemmi)
-                {
-                    Console.WriteLine("Lemma: " + kv.Key);
-                    Console.WriteLine("Risorse:");
-                    foreach (var risorsa in kv.Value)
-                    {
-
-                        Console.WriteLine(risorsa.Key + ": " + risorsa.Value);
-
-                    }
-                    Console.WriteLine();
-                }*/
-                //Utils.StampaDizionario(lemmi);
-
-
+                Utils.UploadLemmiOfLexres(lemmi, em.ToString());
             }
+            //Utils.DeleteDatabase();
 
-            Utils.UploadLemmiOfLexres(lemmi);
         }
 
         public static class Parsing

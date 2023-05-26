@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 
 public class Utils
 {
+
     public static string[] ExtractEmoji(string fileUrl)
     {
         int start = File.ReadAllText(fileUrl).IndexOf('[');
@@ -48,14 +49,7 @@ public class Utils
         }
     }
 
-
-    /*
-    INSERT INTO table_name (column1, column2, column3, ...)
-    VALUES (value1, value2, value3, ...);
-    */
-
-    //string emozione, List<Dictionary<string, int>> lemmi, bool dropIfNotEmpty
-    public static void UploadLemmiOfLexres(Dictionary<string, Dictionary<string, int>> lemmi)
+    public static void UploadLemmiOfLexres(Dictionary<string, Dictionary<string, int>> lemmi, string sentimento)
     {
         MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
         MySqlCommand cmd = new MySqlCommand();
@@ -108,13 +102,12 @@ public class Utils
             foreach (KeyValuePair<string, Dictionary<string, int>> outerPair in lemmi)
 
             {
-                command.Parameters.AddWithValue("@sentimento", "esempio_sentimento");
+                command.Parameters.AddWithValue("@sentimento", sentimento);
                 command.Parameters.AddWithValue("@lemma", outerPair.Key);
                 command.ExecuteNonQuery();
                 using (MySqlCommand command3 = new MySqlCommand(getIdQuery, conn))
                 {
                     lemmaID = Convert.ToInt32(command3.ExecuteScalar());
-                    Console.WriteLine("**************************" + lemmaID);
                 }
                 command.Parameters.RemoveAt("@lemma");
                 command.Parameters.RemoveAt("@sentimento");
@@ -212,4 +205,20 @@ public class Utils
         return parolePerRisLes.Count;
         */
     }
+
+    public static void DeleteDatabase()
+    {
+        MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
+        MySqlCommand cmd = new MySqlCommand();
+        cmd.Connection = conn;
+        conn.Open();
+
+        cmd.CommandText = "DROP TABLE inner_dict, outer_dict;";
+        cmd.ExecuteNonQuery();
+
+        conn.Close();
+
+    }
+
+
 }
