@@ -19,15 +19,17 @@ namespace HelloWorld
             //Dictionary<sentimento, Dictionary<lemma, Dictionary<risorsa, counter>>>
             Dictionary<string, Dictionary<string, Dictionary<string, int>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, int>>>();
 
+            //funzione per riconosce gli slang, inuput solo il tweet, restituisce avetuali slangs
+
 
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
 
                 Dictionary<string, Dictionary<string, int>> lemmi = Utils.LemmasToDictionary(lemmiArray, em);
                 lemmiArray[em.ToString()] = lemmi;
-                //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
+                Utils.UploadLemmiOfLexres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
-                Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
+                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
 
             }
 
