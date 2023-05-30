@@ -1,5 +1,7 @@
 using System.Data;
 using MySql.Data.MySqlClient;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 public class Utils
 {
@@ -220,5 +222,206 @@ public class Utils
 
     }
 
+    public static void UploadLemmiOfLexresMongoDB(Dictionary<string, Dictionary<string, int>> lemmi, string sentimento)
+    {
+        string connectionString = "mongodb://localhost:27017";
+        MongoClient client = new MongoClient(connectionString);
+
+        string databaseName = "testName";
+        string collectionName = "testcollection2";
+
+        // Ottieni il riferimento al database
+        IMongoDatabase database = client.GetDatabase(databaseName);
+
+        // Ottieni il riferimento alla collezione
+        var collection = database.GetCollection<BsonDocument>(collectionName);
+
+        /* Salva ogni lemma come un documento 
+        foreach (var item in lemmi)
+        {
+            var document = new BsonDocument();
+            document.Add("lemma", item.Key);
+
+            var innerDict = new BsonDocument();
+            foreach (var innerItem in item.Value)
+            {
+                innerDict.Add(innerItem.Key, innerItem.Value);
+            }
+
+            document.Add("risorse", innerDict);
+
+            collection.InsertOne(document);
+        }
+        */
+        var document = new BsonDocument();
+
+        document.Add("sentimento", sentimento);
+
+        foreach (var outerKey in lemmi.Keys)
+        {
+            var outerDict = lemmi[outerKey];
+            var innerDoc = new BsonDocument();
+
+            foreach (var innerKey in outerDict.Keys)
+            {
+                var innerValue = outerDict[innerKey];
+                innerDoc.Add(innerKey, innerValue);
+            }
+
+            document.Add(outerKey, innerDoc);
+        }
+
+        // Inserisci il documento nel database
+        collection.InsertOne(document);
+
+
+    }
+
+    public static Dictionary<string, Dictionary<string, int>> LemmasToDictionary(Dictionary<string, Dictionary<string, Dictionary<string, int>>> lemmiArray, Emotions em)
+    {
+
+        Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>(); // Creazione di un nuovo dizionario per ogni iterazione
+
+        //Console.WriteLine(em);
+        string startPath = $"Risorse lessicali/{em}/";
+        string endPath = $"_{em}.txt";
+
+        foreach (Resources res in Resources.GetValues(typeof(Resources)))
+        {
+            if (res == Resources.nuova_risorsa)
+            {
+                continue;
+
+            }
+
+            try
+            {
+                string resString = res.ToString();
+                string path = startPath + resString + endPath;
+
+                // Leggi tutti i lemmi presenti nella risorsa lessicale
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    string lemma = reader.ReadLine();
+
+
+                    while (lemma != null)
+                    {
+                        // Rimuovi l'endline
+                        lemma = lemma.Replace("\n", "");
+
+                        // Rimuovi le parole composte
+                        if (!lemma.Contains("_"))
+                        {
+                            //Console.WriteLine("ID" + lemmiArray[(int)em]);
+
+                            Dictionary<string, int> l = lemmi.ContainsKey(lemma) ? lemmi[lemma] : new Dictionary<string, int>();
+                            l[resString] = 1;
+                            lemmi[lemma] = l;
+                        }
+
+                        lemma = reader.ReadLine();
+
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                continue;
+            }
+
+        }
+        return lemmi;
+
+
+
+    }
+
+    public static void readTwitter(string nameFile, string[] splittedText)
+    {
+
+        String line;
+        try
+        {
+            StreamReader sr = new StreamReader(nameFile);
+
+            line = sr.ReadToEnd();
+            int i = line.IndexOf("_");
+            int head;
+            int tail;
+
+            while (i > 0)
+            {
+                Console.WriteLine("Underscore: " + i);
+                int j = i;
+
+                while (!line[j].Equals(' '))
+                {
+                    j--;
+                }
+                head = j;
+
+                Console.WriteLine("Head: " + head);
+                j = i;
+                while (!line[j].Equals(' ') && j < line.Length - 1)
+                {
+                    j++;
+                }
+                tail = j;
+                Console.WriteLine("Tail: " + j);
+
+                //salva la parola che stiamo considerando, per controllare se è un emoji
+                String selected_word = line.Substring(head + 1, tail - head - 1);
+
+
+                bool isEmoji = false;
+
+                //conftronta ogni emoji con la parola, sia per le emoji positive che per quelle negative
+                foreach (String emoji in splittedText)
+                {
+                    // Console.WriteLine("Confronta " + selected_word + " con " + emoji + " Risultato: " + selected_word.Equals(emoji));
+                    if (selected_word.Equals(emoji))
+                    {
+                        isEmoji = true;
+
+                    }
+
+                }
+
+                if (!isEmoji)
+                {
+                    String res = line.Remove(head + 1, tail - head);
+                    sr.Close();
+
+                    File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
+                    line = res; //salva la nuova frase per continuare a iterare
+                }
+
+
+                i = line.IndexOf("_", i + 1);
+            }
+
+            sr.Close();
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Exception: " + e.Message);
+        }
+        finally
+        {
+            Console.WriteLine("Executing finally block.");
+        }
+
+    }
+
+
 
 }
+
+
+
+
+
+
+
