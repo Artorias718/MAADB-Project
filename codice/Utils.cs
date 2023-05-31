@@ -2,6 +2,8 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using System.Globalization;
+
 
 public class Utils
 {
@@ -35,7 +37,7 @@ public class Utils
         return splittedText;
     }
 
-    public static void StampaDizionario(Dictionary<string, Dictionary<string, int>> d)
+    public static void StampaDizionario(Dictionary<string, Dictionary<string, double>> d)
     {
         foreach (var kv in d)
         {
@@ -51,7 +53,7 @@ public class Utils
         }
     }
 
-    public static void UploadLemmiOfLexres(Dictionary<string, Dictionary<string, int>> lemmi, string sentimento)
+    public static void UploadLemmiOfLexres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
     {
         MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
         MySqlCommand cmd = new MySqlCommand();
@@ -75,12 +77,13 @@ public class Utils
                               "`id` INT NOT NULL AUTO_INCREMENT, " +
                               "`lemma` VARCHAR(255) NOT NULL, " +
                               "`sentimento` VARCHAR(255), " +
-                              "`EmoSN` INT DEFAULT 0, " +
-                              "`SentiSense` INT DEFAULT 0, " +
-                              "`NRC` INT DEFAULT 0, " +
-                              "`AFINN` INT, " +
-                              "`ANEW` INT, " +
-                              "`Frquency` INT, " +
+                              "`EmoSN` DOUBLE DEFAULT 0, " +
+                              "`SentiSense` DOUBLE DEFAULT 0, " +
+                              "`NRC` DOUBLE DEFAULT 0, " +
+                              "`AFINN` DOUBLE, " +
+                              "`ANEWARO` DOUBLE, " +
+                              "`ANEWDOM` DOUBLE, " +
+                              "`ANEWPLEAS` DOUBLE, " +
                               "PRIMARY KEY (`id`)" +
                               ");";
 
@@ -88,28 +91,35 @@ public class Utils
         }
 
 
-        string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense) VALUES (@lemma, @sentimento, @EmoSN, @SentiSense);";
+        string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS)" +
+                                            "VALUES (@lemma, @sentimento, @EmoSN, @SentiSense, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS);";
         //string innerDictQuery = "INSERT INTO tavoletta (risorsa, value, lemma_id) VALUES (@EmoSN, @SentiSense, @NRC, @AFINN, @ANEW, @Frquency);";
-
 
 
         using (MySqlCommand command = new MySqlCommand(outerDictQuery, conn))
         {
 
 
-            foreach (KeyValuePair<string, Dictionary<string, int>> outerPair in lemmi)
+            foreach (KeyValuePair<string, Dictionary<string, double>> outerPair in lemmi)
             {
 
                 command.Parameters.AddWithValue("@lemma", outerPair.Key);
                 command.Parameters.AddWithValue("@sentimento", sentimento);
 
-                // Aggiungi il valore di default per @EmoSN e @SentiSense
+                // Aggiungi il valore di default 
                 command.Parameters.AddWithValue("@EmoSN", 0);
                 command.Parameters.AddWithValue("@SentiSense", 0);
+                command.Parameters.AddWithValue("@AFINN", null);
+                command.Parameters.AddWithValue("@ANEWARO", null);
+                command.Parameters.AddWithValue("@ANEWDOM", null);
+                command.Parameters.AddWithValue("@ANEWPLEAS", null);
 
-                foreach (KeyValuePair<string, int> innerPair in outerPair.Value)
+
+
+                foreach (KeyValuePair<string, double> innerPair in outerPair.Value)
                 {
                     Resources resource;
+                    ResourcesWithScore resourceWithScore;
 
                     if (Enum.TryParse(innerPair.Key, out resource))
                     {
@@ -124,14 +134,40 @@ public class Utils
                         }
                     }
 
+                    if (Enum.TryParse(innerPair.Key, out resourceWithScore))
+                    {
+                        switch (resourceWithScore)
+                        {
+                            case ResourcesWithScore.afinn:
+                                command.Parameters["@AFINN"].Value = innerPair.Value;
+                                break;
+                            case ResourcesWithScore.anewAro:
+                                command.Parameters["@ANEWARO"].Value = innerPair.Value;
+                                break;
+                            case ResourcesWithScore.anewDom:
+                                command.Parameters["@ANEWDOM"].Value = innerPair.Value;
+                                break;
+                            case ResourcesWithScore.anewPleas:
+                                command.Parameters["@ANEWPLEAS"].Value = innerPair.Value;
+                                break;
+                        }
+                    }
 
-                    command.ExecuteNonQuery();
 
                 }
+
+                command.ExecuteNonQuery();
+
                 command.Parameters.RemoveAt("@lemma");
                 command.Parameters.RemoveAt("@sentimento");
                 command.Parameters.RemoveAt("@EmoSN");
                 command.Parameters.RemoveAt("@SentiSense");
+                command.Parameters.RemoveAt("@AFINN");
+                command.Parameters.RemoveAt("@ANEWARO");
+                command.Parameters.RemoveAt("@ANEWDOM");
+                command.Parameters.RemoveAt("@ANEWPLEAS");
+
+
             }
             conn.Close();
 
@@ -152,7 +188,7 @@ public class Utils
 
     }
 
-    public static void UploadLemmiOfLexresMongoDB(Dictionary<string, Dictionary<string, int>> lemmi, string sentimento)
+    public static void UploadLemmiOfLexresMongoDB(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
     {
         string connectionString = "mongodb://localhost:27017";
         MongoClient client = new MongoClient(connectionString);
@@ -207,15 +243,80 @@ public class Utils
 
     }
 
-    public static Dictionary<string, Dictionary<string, int>> LemmasToDictionary(Dictionary<string, Dictionary<string, Dictionary<string, int>>> lemmiArray, Emotions em)
+    public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray, Emotions em)
     {
 
-        Dictionary<string, Dictionary<string, int>> lemmi = new Dictionary<string, Dictionary<string, int>>(); // Creazione di un nuovo dizionario per ogni iterazione
+        Dictionary<string, Dictionary<string, double>> lemmi = new Dictionary<string, Dictionary<string, double>>(); // Creazione di un nuovo dizionario per ogni iterazione
+        Dictionary<string, Dictionary<string, double>> lemmaWithScore = new Dictionary<string, Dictionary<string, double>>();
+
+        //TODO
+        //Qui assegna tutti gli score all'etichetta "afinn" manulamente, per avere anche quella devo trasformare lemmawithScore in un 
+        // Dictionary<string, Dictionary<string, int>>
+        // <lemma<risorsa:score>>
 
         //Console.WriteLine(em);
         string startPath = $"Risorse lessicali/{em}/";
         string endPath = $"_{em}.txt";
+        string startPathConScore = $"Risorse lessicali/ConScore/";
+        string endPathWithScore = $"_tab.tsv";
 
+
+        //popola lemmaWithscore con le risorse lessicali con lo score in afinn.txt
+        using (StreamReader reader = new StreamReader(startPathConScore + "afinn.txt"))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                string[] lineParts = line.Split('\t');
+                string parola = lineParts[0];
+                double numero = double.Parse(lineParts[1]);
+                if (!lemmaWithScore.ContainsKey(parola))
+                {
+                    lemmaWithScore[parola] = new Dictionary<string, double>();
+                }
+                lemmaWithScore[parola]["afinn"] = numero;
+
+            }
+        }
+        //popola lemmaWithscore con le risorse lessicali con lo score negli altri 3 files
+        foreach (ResourcesWithScore res in ResourcesWithScore.GetValues(typeof(ResourcesWithScore)))
+        {
+            if (res == ResourcesWithScore.nuova_risorsa)
+            {
+                continue;
+
+            }
+
+            try
+            {
+                string resString = res.ToString();
+                string path = startPathConScore + resString + endPathWithScore;
+
+                // Leggi tutti i lemmi presenti nella risorsa lessicale
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] lineParts = line.Split('\t');
+                        string parola = lineParts[0];
+                        double numero = double.Parse(lineParts[1], CultureInfo.GetCultureInfo("en-US")); if (!lemmaWithScore.ContainsKey(parola))
+                        {
+                            lemmaWithScore[parola] = new Dictionary<string, double>();
+                        }
+
+                        lemmaWithScore[parola][resString] = numero;
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                continue;
+            }
+
+        }
+
+        //popola il dizionario del lemma sia con parole delle risorse normali che con parole delle risorse con score
         foreach (Resources res in Resources.GetValues(typeof(Resources)))
         {
             if (res == Resources.nuova_risorsa)
@@ -243,13 +344,21 @@ public class Utils
                         // Rimuovi le parole composte
                         if (!lemma.Contains("_"))
                         {
-                            //Console.WriteLine("ID" + lemmiArray[(int)em]);
-
-                            Dictionary<string, int> l = lemmi.ContainsKey(lemma) ? lemmi[lemma] : new Dictionary<string, int>();
+                            //carica nel dizionario i lemmi senza score
+                            Dictionary<string, double> l = lemmi.ContainsKey(lemma) ? lemmi[lemma] : new Dictionary<string, double>();
                             l[resString] = 1;
                             lemmi[lemma] = l;
-                        }
+                            //se il lemma è presente nel lemmaWithScore, aggiunge anche gli scores delle altre risorse
+                            if (lemmaWithScore.ContainsKey(lemma))
+                            {
+                                foreach (var dict in lemmaWithScore[lemma])
+                                {
+                                    l[dict.Key] = dict.Value;
+                                    lemmi[lemma] = l;
+                                }
 
+                            }
+                        }
                         lemma = reader.ReadLine();
 
                     }

@@ -19,3 +19,12 @@ public enum Resources
     sentisense,
     nuova_risorsa
 }
+
+public enum ResourcesWithScore
+{
+    afinn,
+    anewAro,
+    anewDom,
+    anewPleas,
+    nuova_risorsa
+}

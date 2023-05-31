@@ -17,7 +17,7 @@ namespace HelloWorld
 
             //Array di dizionari dei sentimenti
             //Dictionary<sentimento, Dictionary<lemma, Dictionary<risorsa, counter>>>
-            Dictionary<string, Dictionary<string, Dictionary<string, int>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, int>>>();
+            Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
 
             //funzione per riconosce gli slang, inuput solo il tweet, restituisce avetuali slangs
 
@@ -25,11 +25,12 @@ namespace HelloWorld
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
 
-                Dictionary<string, Dictionary<string, int>> lemmi = Utils.LemmasToDictionary(lemmiArray, em);
+                Dictionary<string, Dictionary<string, double>> lemmi = Utils.LemmasToDictionary(lemmiArray, em);
                 lemmiArray[em.ToString()] = lemmi;
-                Utils.UploadLemmiOfLexres(lemmi, em.ToString());
+                //Utils.StampaDizionario(lemmi);
+                //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
-                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
+                Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
 
             }
 
