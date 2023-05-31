@@ -7,7 +7,6 @@ using System.Globalization;
 
 public class Utils
 {
-
     public static string[] ExtractEmoji(string fileUrl)
     {
         int start = File.ReadAllText(fileUrl).IndexOf('[');
@@ -454,6 +453,71 @@ public class Utils
 
     }
 
+    public static int CalcoloPercentuali(Resources res, Emotions em)
+    {
+        string startPath = $"Risorse lessicali/{em}/";
+        string endPath = $"_{em}.txt";
+        string tweetPath = $"Twitter messaggi/dataset_dt_anger_60k.txt";
+
+        int N_twitter_words = 0;
+        int N_lex_words = 0;
+        List<string> lemmiPresenti = new List<string>();
+        int N_shared_words = 0;
+
+        try
+        {
+            string resString = res.ToString();
+            string path = startPath + resString + endPath;
+
+            // Leggi tutti i lemmi presenti nella risorsa lessicale
+            using (StreamReader reader = new StreamReader(path))
+            {
+                string lemma = reader.ReadLine();
+
+                while (lemma != null)
+                {
+                    // Rimuovi l'endline
+                    lemma = lemma.Replace("\n", "");
+                    N_lex_words++;
+                    // Rimuovi le parole composte
+                    if (!lemma.Contains("_"))
+                    {
+                        using (StreamReader readerTweet = new StreamReader(tweetPath))
+                        {
+                            string rigaTweet;
+                            while ((rigaTweet = readerTweet.ReadLine()) != null)
+                            {
+                                string[] words = rigaTweet.Split(' '); // Dividi la riga in parole utilizzando lo spazio come separatore
+
+                                foreach (string word in words)
+                                {
+                                    // Esegui le operazioni desiderate con ogni parola
+                                    N_twitter_words++;
+                                    if (lemma == word && !lemmiPresenti.Contains(lemma))
+                                    {
+                                        lemmiPresenti.Add(lemma);
+                                        //fare che se il lemma compare aumenti di 1 ma poi non lo faccia pi+ per quel lemma
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    lemma = reader.ReadLine();
+
+                }
+            }
+        }
+        catch (FileNotFoundException) { }
+
+        N_shared_words = lemmiPresenti.Count;
+
+        int perc_presence_lex_res = N_shared_words / N_lex_words;
+        int perc_presence_twitter = N_shared_words / N_twitter_words;
+
+        return perc_presence_lex_res;
+
+
+    }
 }
 
 

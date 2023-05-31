@@ -30,9 +30,11 @@ namespace HelloWorld
                 //Utils.StampaDizionario(lemmi);
                 //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
-                Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
+                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
 
             }
+            Console.WriteLine(Utils.CalcoloPercentuali(Resources.EmoSN, Emotions.anger) + "%");
+
 
         }
 
