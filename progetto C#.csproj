@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="mongocsharpdriver" Version="2.19.2" />
     <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="OpenNLP.NET" Version="1.9.4.1" />
   </ItemGroup>
 
 </Project>

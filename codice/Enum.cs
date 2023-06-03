@@ -28,3 +28,10 @@ public enum ResourcesWithScore
     anewPleas,
     nuova_risorsa
 }
+public enum Tokens
+{
+    hashtag,
+    emoji,
+    emoticon
+
+}

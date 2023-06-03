@@ -48,7 +48,7 @@ public class Utils
         string text = File.ReadAllText(fileUrl).Substring(start + 1, end - start - 1);
         string[] splittedText1 = text.Split(':');
         string[] splittedText2 = new string[0];
-        
+
         for (int i = 0; i < splittedText1.Length; i++)
         {
             splittedText1[i] = splittedText1[i].Trim();
@@ -57,18 +57,18 @@ public class Utils
 
             //splittedText[i] = splittedText[i].Substring(1, splittedText[i].Length - 2);
 
-            if(!splittedText1[i].StartsWith("\'"))
+            if (!splittedText1[i].StartsWith("\'"))
             {
-                splittedText1[i-1] = splittedText1[i-1] + ":" + splittedText1[i];
+                splittedText1[i - 1] = splittedText1[i - 1] + ":" + splittedText1[i];
 
                 splittedText1 = Array.FindAll(splittedText1, e => e != splittedText1[i]);
             }
         }
 
-        foreach(string elem in splittedText1)
+        foreach (string elem in splittedText1)
         {
             string[] support = elem.Split(",");
-            
+
             splittedText2 = splittedText2.Concat(support).ToArray();
         }
 
@@ -80,21 +80,21 @@ public class Utils
             if (splittedText2[i].StartsWith(" "))
                 splittedText2[i] = splittedText2[i].Substring(1);
 
-            if(!splittedText2[i].StartsWith("\'"))
+            if (!splittedText2[i].StartsWith("\'"))
             {
-                splittedText2[i-1] = splittedText2[i-1] + ", " + splittedText2[i];
+                splittedText2[i - 1] = splittedText2[i - 1] + ", " + splittedText2[i];
 
                 splittedText2 = Array.FindAll(splittedText2, e => e != splittedText2[i]); //per rimuovere elemento in posizione i
-                i = i-2;
+                i = i - 2;
             }
         }
 
         for (int i = 0; i < splittedText2.Length; i++)
             splittedText2[i] = splittedText2[i].Substring(1, splittedText2[i].Length - 2);
-        
-        for (int i = 0; i < splittedText2.Length; i = i+2)
-            SlagWords.Add(splittedText2[i], splittedText2[i+1]);
-        
+
+        for (int i = 0; i < splittedText2.Length; i = i + 2)
+            SlagWords.Add(splittedText2[i], splittedText2[i + 1]);
+
         return SlagWords;
     }
 
@@ -328,7 +328,7 @@ public class Utils
 
     }
 
-    public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray, Emotions em)
+    public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Emotions em)
     {
 
         Dictionary<string, Dictionary<string, double>> lemmi = new Dictionary<string, Dictionary<string, double>>(); // Creazione di un nuovo dizionario per ogni iterazione
@@ -462,11 +462,18 @@ public class Utils
 
     }
 
-    public static void readTwitter(Emotions em, Dictionary<string, Dictionary<string, int>> elemSearch, string[] searchElem)
+    public static void readTwitter(Emotions em, Dictionary<Tokens, Dictionary<string, int>> tokens, string[] splittedEmoji, string[] splittedEmoticons, Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies, Dictionary<string, Dictionary<string, double>> lemmi)
     {
         string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
-        Dictionary<string, int> hash = new Dictionary<string, int>();
-        
+        Dictionary<string, int> innerDictLemmiFreq = new Dictionary<string, int>();
+
+        foreach (string l in lemmi.Keys)
+        {
+            innerDictLemmiFreq[l] = 0;
+
+        }
+        lemmaFrequencies[em] = innerDictLemmiFreq;
+
         using (StreamReader readerTweet = new StreamReader(tweetPath))
         {
             string? rigaTweet;
@@ -476,67 +483,34 @@ public class Utils
 
                 foreach (string word in words)
                 {
+
                     word.Trim();
-                    if(word.Contains('#'))
+                    if (word.Contains('#'))
                     {
-                        if(hash.ContainsKey(word))
+
+                        if (tokens[Tokens.hashtag].ContainsKey(word))
                         {
-                            hash[word]++;
+                            tokens[Tokens.hashtag][word]++;
                         }
                         else
                         {
-                            hash.Add(word, 1);
+                            tokens[Tokens.hashtag].Add(word, 1);
                         }
                     }
 
-                    foreach (string elem in searchElem)
+                    foreach (string emo in splittedEmoticons)
                     {
-                        if (word.Contains(elem))
+                        if (word.Contains(emo))
                         {
                             continue;
                         }
-
-                        if (hash.ContainsKey(elem))
+                        if (tokens[Tokens.emoticon].ContainsKey(emo))
                         {
-                            hash[elem]++;
+                            tokens[Tokens.emoticon][emo]++;
                         }
                         else
                         {
-                            hash.Add(elem, 1);
-                        }
-                    }
-                    /*
-                    foreach(string emoticon in emoticons)
-                    {
-                        if (word.Contains(emoticon))
-                        {
-                            continue;
-                        }
-
-                        if (hash.ContainsKey(emoticon))
-                        {
-                            hash[emoticon]++;
-                        }
-                        else
-                        {
-                            hash.Add(emoticon, 1);
-                        }
-                    }
-
-                    foreach (string slag in slagWords)
-                    {
-                        if (!word.Contains(slag))
-                        {
-                            continue;
-                        }
-
-                        if (hash.ContainsKey(slag))
-                        {
-                            hash[slag]++;
-                        }
-                        else
-                        {
-                            hash.Add(slag, 1);
+                            tokens[Tokens.emoticon].Add(emo, 1);
                         }
                     }
 
@@ -546,27 +520,33 @@ public class Utils
                         {
                             continue;
                         }
-                        
-                        if (hash.ContainsKey(emoji))
+
+                        if (tokens[Tokens.emoji].ContainsKey(emoji))
                         {
-                            hash[emoji]++;
+                            tokens[Tokens.emoji][emoji]++;
                         }
                         else
                         {
-                            hash.Add(emoji, 1);
+                            tokens[Tokens.emoji].Add(emoji, 1);
                         }
                     }
-                    */
+                    foreach (string lem in lemmi.Keys)
+                    {
+                        if (word.Contains(lem))
+                        {
+                            innerDictLemmiFreq[lem]++;
+                        }
+
+                    }
                 }
             }
+
+
+            /*
+            foreach (KeyValuePair<string, int> kv in hash)
+                Console.WriteLine($"EMOTIZIONE: {em}, NOME: {kv.Key}, VALORE: {kv.Value}");
+            */
         }
-
-        elemSearch.Add(em.ToString(), hash);
-
-        /*
-        foreach (KeyValuePair<string, int> kv in hash)
-            Console.WriteLine($"EMOTIZIONE: {em}, NOME: {kv.Key}, VALORE: {kv.Value}");
-        */
     }
 
     public static void readTwitter(string nameFile, string[] splittedText)
