@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Data;
 using MySql.Data.MySqlClient;
 using MongoDB.Driver;
@@ -7,7 +9,7 @@ using System.Globalization;
 
 public class Utils
 {
-    public static string[] ExtractEmoji(string fileUrl)
+    public static string[] ExtractEmoticons(string fileUrl)
     {
         int start = File.ReadAllText(fileUrl).IndexOf('[');
         int end = File.ReadAllText(fileUrl).LastIndexOf(']');
@@ -33,6 +35,90 @@ public class Utils
             //Console.WriteLine(splittedText[i]);
 
         }
+        return splittedText;
+    }
+
+    public static Dictionary<string, string> ExtractSlagWords(string fileUrl)
+    {
+        int start = File.ReadAllText(fileUrl).IndexOf('{');
+        int end = File.ReadAllText(fileUrl).LastIndexOf('}');
+
+        Dictionary<string, string> SlagWords = new Dictionary<string, string>();
+
+        string text = File.ReadAllText(fileUrl).Substring(start + 1, end - start - 1);
+        string[] splittedText1 = text.Split(':');
+        string[] splittedText2 = new string[0];
+        
+        for (int i = 0; i < splittedText1.Length; i++)
+        {
+            splittedText1[i] = splittedText1[i].Trim();
+            splittedText1[i] = splittedText1[i].Replace("\r\n", "");
+            //splittedText1[i] = splittedText1[i].Replace(" ", "");
+
+            //splittedText[i] = splittedText[i].Substring(1, splittedText[i].Length - 2);
+
+            if(!splittedText1[i].StartsWith("\'"))
+            {
+                splittedText1[i-1] = splittedText1[i-1] + ":" + splittedText1[i];
+
+                splittedText1 = Array.FindAll(splittedText1, e => e != splittedText1[i]);
+            }
+        }
+
+        foreach(string elem in splittedText1)
+        {
+            string[] support = elem.Split(",");
+            
+            splittedText2 = splittedText2.Concat(support).ToArray();
+        }
+
+        for (int i = 0; i < splittedText2.Length; i++)
+        {
+            splittedText2[i] = splittedText2[i].Replace("\r\n", "");
+            //splittedText2[i] = splittedText2[i].Replace(" ", "");
+
+            if (splittedText2[i].StartsWith(" "))
+                splittedText2[i] = splittedText2[i].Substring(1);
+
+            if(!splittedText2[i].StartsWith("\'"))
+            {
+                splittedText2[i-1] = splittedText2[i-1] + ", " + splittedText2[i];
+
+                splittedText2 = Array.FindAll(splittedText2, e => e != splittedText2[i]); //per rimuovere elemento in posizione i
+                i = i-2;
+            }
+        }
+
+        for (int i = 0; i < splittedText2.Length; i++)
+            splittedText2[i] = splittedText2[i].Substring(1, splittedText2[i].Length - 2);
+        
+        for (int i = 0; i < splittedText2.Length; i = i+2)
+            SlagWords.Add(splittedText2[i], splittedText2[i+1]);
+        
+        return SlagWords;
+    }
+
+    public static string[] ExtractEmoji(string fileUrl)
+    {
+        int start = File.ReadAllText(fileUrl).IndexOf('[');
+        int end = File.ReadAllText(fileUrl).LastIndexOf(']');
+
+        string text = File.ReadAllText(fileUrl).Substring(start + 1, end - start - 1);
+        string[] splittedText = text.Split(',');
+
+        for (int i = 0; i < splittedText.Length; i++)
+        {
+            splittedText[i] = splittedText[i].Trim();
+            splittedText[i] = splittedText[i].Replace("\r\n", "");
+            splittedText[i] = splittedText[i].Substring(2, splittedText[i].Length - 3);
+
+            //Console.WriteLine(splittedText[i]);
+
+            //splittedText[i] = splittedText[i].Substring(1, splittedText[i].Length - 2);
+
+            //Console.WriteLine(splittedText[i]);
+        }
+
         return splittedText;
     }
 
@@ -263,7 +349,7 @@ public class Utils
         //popola lemmaWithscore con le risorse lessicali con lo score in afinn.txt
         using (StreamReader reader = new StreamReader(startPathConScore + "afinn.txt"))
         {
-            string line;
+            string? line;
             while ((line = reader.ReadLine()) != null)
             {
                 string[] lineParts = line.Split('\t');
@@ -294,11 +380,12 @@ public class Utils
                 // Leggi tutti i lemmi presenti nella risorsa lessicale
                 using (StreamReader reader = new StreamReader(path))
                 {
-                    string line;
+                    string? line;
                     while ((line = reader.ReadLine()) != null)
                     {
                         string[] lineParts = line.Split('\t');
                         string parola = lineParts[0];
+
                         double numero = double.Parse(lineParts[1], CultureInfo.GetCultureInfo("en-US")); if (!lemmaWithScore.ContainsKey(parola))
                         {
                             lemmaWithScore[parola] = new Dictionary<string, double>();
@@ -332,7 +419,7 @@ public class Utils
                 // Leggi tutti i lemmi presenti nella risorsa lessicale
                 using (StreamReader reader = new StreamReader(path))
                 {
-                    string lemma = reader.ReadLine();
+                    string? lemma = reader.ReadLine();
 
 
                     while (lemma != null)
@@ -375,9 +462,115 @@ public class Utils
 
     }
 
+    public static void readTwitter(Emotions em, Dictionary<string, Dictionary<string, int>> elemSearch, string[] searchElem)
+    {
+        string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
+        Dictionary<string, int> hash = new Dictionary<string, int>();
+        
+        using (StreamReader readerTweet = new StreamReader(tweetPath))
+        {
+            string? rigaTweet;
+            while ((rigaTweet = readerTweet.ReadLine()) != null)
+            {
+                string[] words = rigaTweet.Split(' '); // Dividi la riga in parole utilizzando lo spazio come separatore
+
+                foreach (string word in words)
+                {
+                    word.Trim();
+                    if(word.Contains('#'))
+                    {
+                        if(hash.ContainsKey(word))
+                        {
+                            hash[word]++;
+                        }
+                        else
+                        {
+                            hash.Add(word, 1);
+                        }
+                    }
+
+                    foreach (string elem in searchElem)
+                    {
+                        if (word.Contains(elem))
+                        {
+                            continue;
+                        }
+
+                        if (hash.ContainsKey(elem))
+                        {
+                            hash[elem]++;
+                        }
+                        else
+                        {
+                            hash.Add(elem, 1);
+                        }
+                    }
+                    /*
+                    foreach(string emoticon in emoticons)
+                    {
+                        if (word.Contains(emoticon))
+                        {
+                            continue;
+                        }
+
+                        if (hash.ContainsKey(emoticon))
+                        {
+                            hash[emoticon]++;
+                        }
+                        else
+                        {
+                            hash.Add(emoticon, 1);
+                        }
+                    }
+
+                    foreach (string slag in slagWords)
+                    {
+                        if (!word.Contains(slag))
+                        {
+                            continue;
+                        }
+
+                        if (hash.ContainsKey(slag))
+                        {
+                            hash[slag]++;
+                        }
+                        else
+                        {
+                            hash.Add(slag, 1);
+                        }
+                    }
+
+                    foreach (string emoji in splittedEmoji)
+                    {
+                        if (word.Contains(emoji))
+                        {
+                            continue;
+                        }
+                        
+                        if (hash.ContainsKey(emoji))
+                        {
+                            hash[emoji]++;
+                        }
+                        else
+                        {
+                            hash.Add(emoji, 1);
+                        }
+                    }
+                    */
+                }
+            }
+        }
+
+        elemSearch.Add(em.ToString(), hash);
+
+        /*
+        foreach (KeyValuePair<string, int> kv in hash)
+            Console.WriteLine($"EMOTIZIONE: {em}, NOME: {kv.Key}, VALORE: {kv.Value}");
+        */
+    }
+
     public static void readTwitter(string nameFile, string[] splittedText)
     {
-
         String line;
         try
         {
@@ -421,9 +614,7 @@ public class Utils
                     if (selected_word.Equals(emoji))
                     {
                         isEmoji = true;
-
                     }
-
                 }
 
                 if (!isEmoji)
@@ -434,7 +625,6 @@ public class Utils
                     File.WriteAllText("fare.txt", File.ReadAllText("fare.txt").Replace(line, res));
                     line = res; //salva la nuova frase per continuare a iterare
                 }
-
 
                 i = line.IndexOf("_", i + 1);
             }
@@ -472,7 +662,7 @@ public class Utils
             // Leggi tutti i lemmi presenti nella risorsa lessicale
             using (StreamReader reader = new StreamReader(path))
             {
-                string lemma = reader.ReadLine();
+                string? lemma = reader.ReadLine();
 
                 while (lemma != null)
                 {
@@ -484,7 +674,7 @@ public class Utils
                     {
                         using (StreamReader readerTweet = new StreamReader(tweetPath))
                         {
-                            string rigaTweet;
+                            string? rigaTweet;
                             while ((rigaTweet = readerTweet.ReadLine()) != null)
                             {
                                 string[] words = rigaTweet.Split(' '); // Dividi la riga in parole utilizzando lo spazio come separatore
