@@ -5,6 +5,10 @@ using MySql.Data.MySqlClient;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Globalization;
+using opennlp.tools.tokenize;
+using opennlp.tools.postag;
+using opennlp.tools.util;
+using System.Reflection;
 
 
 public class Utils
@@ -688,6 +692,42 @@ public class Utils
 
 
     }
+
+    public static string[] POStagger(string text)
+    {
+
+        var modelPath = "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin";
+
+        java.io.InputStream inputStream = new java.io.FileInputStream(modelPath);
+        // Utilizzo dell'oggetto InputStream nel costruttore di POSModel
+        POSModel posModel = new POSModel(inputStream);
+
+        // Inizializza il POSTagger con il modello POS
+        POSTaggerME posTagger = new POSTaggerME(posModel);
+
+        // Tokenizzazione del testo
+        Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
+        string[] tokens2 = tokenizer.tokenize(text);
+
+        // Esegui il POS tagging sui token
+        string[] tags = posTagger.tag(tokens2);
+
+        // Stampa i token e i rispettivi POS tags
+        for (int i = 0; i < tokens2.Length; i++)
+        {
+            Console.WriteLine(tokens2[i] + " -> " + tags[i]);
+        }
+
+        //Printing the tokens 
+        foreach (string token in tokens2)
+        {
+            Console.WriteLine(token);
+        }
+        return tags;
+    }
+
+
+
 }
 
 

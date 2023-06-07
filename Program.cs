@@ -4,6 +4,9 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using System.Threading;
 using opennlp.tools.tokenize;
+using opennlp.tools.postag;
+using opennlp.tools.util;
+using System.Reflection;
 
 
 
@@ -43,17 +46,15 @@ namespace HelloWorld
             //TODO
             //aggiungere la frequenza nel db relazionale
             //continuare elaborazione testo
-            string text = "Questo è un esempio di testo da tokenizzare.";
+            //string text = "Questo è un esempio di testo da tokenizzare.";
 
-            SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+            //SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
 
-            String[] tokens2 = tokenizer.tokenize(text);
+            //String[] tokens2 = tokenizer.tokenize(text);
 
-            //Printing the tokens 
-            foreach (string token in tokens2)
-            {
-                Console.WriteLine(token);
-            }
+            // Creazione dell'oggetto InputStream
+            //var modelPath = "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin";
+
 
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
@@ -70,6 +71,8 @@ namespace HelloWorld
             }
             //Console.WriteLine(Utils.CalcoloPercentuali(Resources.EmoSN, Emotions.anger) + "%");
 
+            string[] a;
+            a = Utils.POStagger("run");
             /*foreach (KeyValuePair<Tokens, Dictionary<string, int>> tokenEntry in tokens)
             {
 
@@ -78,6 +81,7 @@ namespace HelloWorld
                     Console.WriteLine("Token: " + tokenEntry.Key + "Chiave: " + innerEntry.Key + ", Valore: " + innerEntry.Value);
                 }
             }*/
+
         }
     }
 }
