@@ -59,9 +59,14 @@ namespace HelloWorld
                 //Utils.DeleteDatabase();
                 //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
                 //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
-                Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi);
+                //Utils.TweetProcessing(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords);
 
             }
+            Dictionary<string, Dictionary<string, double>> lemmiw = new Dictionary<string, Dictionary<string, double>>();
+
+            Utils.TweetProcessing(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmiw, splittedSlagWords);
+
+
 
 
 

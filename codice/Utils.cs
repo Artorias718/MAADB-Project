@@ -466,9 +466,15 @@ public class Utils
 
     }
 
-    public static void readTwitter(Emotions em, Dictionary<Tokens, Dictionary<string, int>> tokens, string[] splittedEmoji, string[] splittedEmoticons, Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies, Dictionary<string, Dictionary<string, double>> lemmi)
+    public static void TweetProcessing(Emotions em,
+                                        Dictionary<Tokens, Dictionary<string, int>> tokens,
+                                        string[] splittedEmoji, string[] splittedEmoticons,
+                                        Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies,
+                                        Dictionary<string, Dictionary<string, double>> lemmi,
+                                        Dictionary<string, string> splittedSlagWords)
     {
-        string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
+        //string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
+        string tweetPath = "Twitter messaggi/test.txt";
         Dictionary<string, int> innerDictLemmiFreq = new Dictionary<string, int>();
 
         foreach (string l in lemmi.Keys)
@@ -478,13 +484,40 @@ public class Utils
         }
         lemmaFrequencies[em] = innerDictLemmiFreq;
 
+        string text = File.ReadAllText(tweetPath);
+
+        //string stopwordsText = "[,?!.;:/()& _+=<>\"]";
+
+        //char[] stopwords = stopwordsText.ToCharArray();
+
+        //tokenizzazione del tweet
         WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-        string[] tokensNLP = tokenizer.tokenize(tweetPath);
+        string[] tokensNLP = tokenizer.tokenize(text);
+        List<string> tokensNLPList = new List<string>(tokensNLP);
 
-        foreach (string tokeNLP in tokensNLP)
+        //rimozione username e url
+        tokensNLPList.Remove("USERNAME");
+        tokensNLPList.Remove("URL");
+
+        //sostituzione slag words
+        foreach (var kv in splittedSlagWords)
         {
+            if (tokensNLPList.Contains(kv.Key))
+            {
+                int index = tokensNLPList.IndexOf(kv.Key);
 
-            tokeNLP.Trim();
+                if (index != -1)
+                {
+                    tokensNLPList.RemoveAt(index);
+                    tokensNLPList.InsertRange(index, tokenizer.tokenize(kv.Value));
+                }
+            }
+
+        }
+
+        //popolamento dizionario dei tokens
+        foreach (string tokeNLP in tokensNLPList)
+        {
             if (tokeNLP.Contains('#'))
             {
 
@@ -502,33 +535,33 @@ public class Utils
             {
                 if (tokeNLP.Contains(emo))
                 {
-                    continue;
+                    if (tokens[Tokens.emoticon].ContainsKey(emo))
+                    {
+                        tokens[Tokens.emoticon][emo]++;
+                    }
+                    else
+                    {
+                        tokens[Tokens.emoticon].Add(emo, 1);
+                    };
                 }
-                if (tokens[Tokens.emoticon].ContainsKey(emo))
-                {
-                    tokens[Tokens.emoticon][emo]++;
-                }
-                else
-                {
-                    tokens[Tokens.emoticon].Add(emo, 1);
-                }
+
             }
 
             foreach (string emoji in splittedEmoji)
             {
                 if (tokeNLP.Contains(emoji))
                 {
-                    continue;
+                    if (tokens[Tokens.emoji].ContainsKey(emoji))
+                    {
+                        tokens[Tokens.emoji][emoji]++;
+                    }
+                    else
+                    {
+                        tokens[Tokens.emoji].Add(emoji, 1);
+                    }
                 }
 
-                if (tokens[Tokens.emoji].ContainsKey(emoji))
-                {
-                    tokens[Tokens.emoji][emoji]++;
-                }
-                else
-                {
-                    tokens[Tokens.emoji].Add(emoji, 1);
-                }
+
             }
             foreach (string lem in lemmi.Keys)
             {
@@ -539,18 +572,23 @@ public class Utils
 
             }
 
-            foreach (var kv in tokens)
-            {
-                foreach (var risorsa in kv.Value)
-                {
-
-                    Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, lemma: {risorsa.Key}, VALORE: {risorsa.Value}");
-
-                }
-            }
-
-
         }
+
+
+        foreach (var kv in tokens)
+        {
+            foreach (var risorsa in kv.Value)
+            {
+
+                Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
+
+            }
+        }
+        /*foreach (string a in tokensNLPList)
+        {
+            Console.WriteLine(a);
+        }*/
+
     }
 
     public static void readTwitter(string nameFile, string[] splittedText)
