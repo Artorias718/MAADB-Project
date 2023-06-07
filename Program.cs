@@ -43,17 +43,10 @@ namespace HelloWorld
             };
 
             Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies = new Dictionary<Emotions, Dictionary<string, int>>();
-            //TODO
-            //aggiungere la frequenza nel db relazionale
-            //continuare elaborazione testo
-            //string text = "Questo è un esempio di testo da tokenizzare.";
 
-            //SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+            //string text = File.ReadAllText("Twitter messaggi/dataset_dt_anger_60k.txt");
 
-            //String[] tokens2 = tokenizer.tokenize(text);
 
-            // Creazione dell'oggetto InputStream
-            //var modelPath = "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin";
 
 
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
@@ -66,13 +59,14 @@ namespace HelloWorld
                 //Utils.DeleteDatabase();
                 //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
                 //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
-                //Utils.readTwitter(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi);
+                Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi);
 
             }
+
+
+
             //Console.WriteLine(Utils.CalcoloPercentuali(Resources.EmoSN, Emotions.anger) + "%");
 
-            string[] a;
-            a = Utils.POStagger("run");
             /*foreach (KeyValuePair<Tokens, Dictionary<string, int>> tokenEntry in tokens)
             {
 

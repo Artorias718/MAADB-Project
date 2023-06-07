@@ -478,78 +478,78 @@ public class Utils
         }
         lemmaFrequencies[em] = innerDictLemmiFreq;
 
-        using (StreamReader readerTweet = new StreamReader(tweetPath))
-        {
-            string? rigaTweet;
-            while ((rigaTweet = readerTweet.ReadLine()) != null)
-            {
-                string[] words = rigaTweet.Split(' '); // Dividi la riga in parole utilizzando lo spazio come separatore
+        WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+        string[] tokensNLP = tokenizer.tokenize(tweetPath);
 
-                foreach (string word in words)
+        foreach (string tokeNLP in tokensNLP)
+        {
+
+            tokeNLP.Trim();
+            if (tokeNLP.Contains('#'))
+            {
+
+                if (tokens[Tokens.hashtag].ContainsKey(tokeNLP))
+                {
+                    tokens[Tokens.hashtag][tokeNLP]++;
+                }
+                else
+                {
+                    tokens[Tokens.hashtag].Add(tokeNLP, 1);
+                }
+            }
+
+            foreach (string emo in splittedEmoticons)
+            {
+                if (tokeNLP.Contains(emo))
+                {
+                    continue;
+                }
+                if (tokens[Tokens.emoticon].ContainsKey(emo))
+                {
+                    tokens[Tokens.emoticon][emo]++;
+                }
+                else
+                {
+                    tokens[Tokens.emoticon].Add(emo, 1);
+                }
+            }
+
+            foreach (string emoji in splittedEmoji)
+            {
+                if (tokeNLP.Contains(emoji))
+                {
+                    continue;
+                }
+
+                if (tokens[Tokens.emoji].ContainsKey(emoji))
+                {
+                    tokens[Tokens.emoji][emoji]++;
+                }
+                else
+                {
+                    tokens[Tokens.emoji].Add(emoji, 1);
+                }
+            }
+            foreach (string lem in lemmi.Keys)
+            {
+                if (tokeNLP.Contains(lem))
+                {
+                    innerDictLemmiFreq[lem]++;
+                }
+
+            }
+
+            foreach (var kv in tokens)
+            {
+                foreach (var risorsa in kv.Value)
                 {
 
-                    word.Trim();
-                    if (word.Contains('#'))
-                    {
+                    Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, lemma: {risorsa.Key}, VALORE: {risorsa.Value}");
 
-                        if (tokens[Tokens.hashtag].ContainsKey(word))
-                        {
-                            tokens[Tokens.hashtag][word]++;
-                        }
-                        else
-                        {
-                            tokens[Tokens.hashtag].Add(word, 1);
-                        }
-                    }
-
-                    foreach (string emo in splittedEmoticons)
-                    {
-                        if (word.Contains(emo))
-                        {
-                            continue;
-                        }
-                        if (tokens[Tokens.emoticon].ContainsKey(emo))
-                        {
-                            tokens[Tokens.emoticon][emo]++;
-                        }
-                        else
-                        {
-                            tokens[Tokens.emoticon].Add(emo, 1);
-                        }
-                    }
-
-                    foreach (string emoji in splittedEmoji)
-                    {
-                        if (word.Contains(emoji))
-                        {
-                            continue;
-                        }
-
-                        if (tokens[Tokens.emoji].ContainsKey(emoji))
-                        {
-                            tokens[Tokens.emoji][emoji]++;
-                        }
-                        else
-                        {
-                            tokens[Tokens.emoji].Add(emoji, 1);
-                        }
-                    }
-                    foreach (string lem in lemmi.Keys)
-                    {
-                        if (word.Contains(lem))
-                        {
-                            innerDictLemmiFreq[lem]++;
-                        }
-
-                    }
                 }
             }
 
 
-            /*
-            foreach (KeyValuePair<string, int> kv in hash)
-                Console.WriteLine($"EMOTIZIONE: {em}, NOME: {kv.Key}, VALORE: {kv.Value}");
-            */
         }
     }
 
