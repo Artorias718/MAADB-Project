@@ -8,9 +8,6 @@ using opennlp.tools.postag;
 using opennlp.tools.util;
 using System.Reflection;
 
-
-
-
 namespace HelloWorld
 {
     class Program
@@ -46,29 +43,21 @@ namespace HelloWorld
 
             //string text = File.ReadAllText("Twitter messaggi/dataset_dt_anger_60k.txt");
 
-
-
-
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
-
                 Dictionary<string, Dictionary<string, double>> lemmi = Utils.LemmasToDictionary(em);
                 lemmiArray[em.ToString()] = lemmi;
                 //Utils.StampaDizionario(lemmi);
                 //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
-                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
                 //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
-                //Utils.TweetProcessing(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords);
-
+                Utils.TweetProcessing(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords);
+                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
             }
-            Dictionary<string, Dictionary<string, double>> lemmiw = new Dictionary<string, Dictionary<string, double>>();
 
-            Utils.TweetProcessing(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmiw, splittedSlagWords);
+            //Dictionary<string, Dictionary<string, double>> lemmiw = new Dictionary<string, Dictionary<string, double>>();
 
-
-
-
+            //Utils.TweetProcessing(Emotions.anger, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmiw, splittedSlagWords);
 
             //Console.WriteLine(Utils.CalcoloPercentuali(Resources.EmoSN, Emotions.anger) + "%");
 

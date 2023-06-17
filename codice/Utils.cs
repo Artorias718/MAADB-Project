@@ -10,7 +10,6 @@ using opennlp.tools.postag;
 using opennlp.tools.util;
 using System.Reflection;
 
-
 public class Utils
 {
     public static string[] ExtractEmoticons(string fileUrl)
@@ -282,8 +281,8 @@ public class Utils
         string connectionString = "mongodb://localhost:27017";
         MongoClient client = new MongoClient(connectionString);
 
-        string databaseName = "testName";
-        string collectionName = "testcollection2";
+        string databaseName = "Twitter";
+        string collectionName = "tweet";
 
         // Ottieni il riferimento al database
         IMongoDatabase database = client.GetDatabase(databaseName);
@@ -473,22 +472,22 @@ public class Utils
                                         Dictionary<string, Dictionary<string, double>> lemmi,
                                         Dictionary<string, string> splittedSlagWords)
     {
-        //string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
-        string tweetPath = "Twitter messaggi/test.txt";
+        string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
+        //string tweetPath = "Twitter messaggi/test.txt";
         Dictionary<string, int> innerDictLemmiFreq = new Dictionary<string, int>();
 
         foreach (string l in lemmi.Keys)
         {
             innerDictLemmiFreq[l] = 0;
-
         }
+
         lemmaFrequencies[em] = innerDictLemmiFreq;
 
         string text = File.ReadAllText(tweetPath);
 
-        //string stopwordsText = "[,?!.;:/()& _+=<>\"]";
+        string stopwordsText = "[,?!.;:/()& _+=<>\"]";
 
-        //char[] stopwords = stopwordsText.ToCharArray();
+        char[] stopwords = stopwordsText.ToCharArray();
 
         //tokenizzazione del tweet
         WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
@@ -512,7 +511,6 @@ public class Utils
                     tokensNLPList.InsertRange(index, tokenizer.tokenize(kv.Value));
                 }
             }
-
         }
 
         //popolamento dizionario dei tokens
@@ -520,7 +518,6 @@ public class Utils
         {
             if (tokeNLP.Contains('#'))
             {
-
                 if (tokens[Tokens.hashtag].ContainsKey(tokeNLP))
                 {
                     tokens[Tokens.hashtag][tokeNLP]++;
@@ -544,7 +541,6 @@ public class Utils
                         tokens[Tokens.emoticon].Add(emo, 1);
                     };
                 }
-
             }
 
             foreach (string emoji in splittedEmoji)
@@ -560,35 +556,45 @@ public class Utils
                         tokens[Tokens.emoji].Add(emoji, 1);
                     }
                 }
-
-
             }
+
+            foreach (char stop in stopwords)
+            {
+                if(tokeNLP.Contains(stop))
+                {
+                    tokeNLP.Remove(stop);
+                }
+            }
+
             foreach (string lem in lemmi.Keys)
             {
                 if (tokeNLP.Contains(lem))
                 {
                     innerDictLemmiFreq[lem]++;
                 }
-
             }
-
         }
 
-
-        foreach (var kv in tokens)
+        /*foreach (var kv in tokens)
         {
             foreach (var risorsa in kv.Value)
             {
-
                 Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
-
             }
-        }
+        }*/
+
         /*foreach (string a in tokensNLPList)
         {
             Console.WriteLine(a);
         }*/
 
+        /*foreach (var kv in lemmaFrequencies)
+        {
+            foreach (var risorsa in kv.Value)
+            {
+                Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
+            }
+        }*/
     }
 
     public static void readTwitter(string nameFile, string[] splittedText)
@@ -733,7 +739,6 @@ public class Utils
 
     public static string[] POStagger(string text)
     {
-
         var modelPath = "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin";
 
         java.io.InputStream inputStream = new java.io.FileInputStream(modelPath);
@@ -761,16 +766,8 @@ public class Utils
         {
             Console.WriteLine(token);
         }
+
         return tags;
     }
-
-
-
+    
 }
-
-
-
-
-
-
-
