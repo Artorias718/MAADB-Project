@@ -276,13 +276,17 @@ public class Utils
 
     }
 
-    public static void UploadLemmiOfLexresMongoDB(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
+    public static void UploadLemmiOfLexresMongoDB(
+        Dictionary<string, Dictionary<string, double>> lemmi,
+        string sentimento,
+        Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray,
+        Dictionary<Tokens, Dictionary<string, int>> tokens)
     {
         string connectionString = "mongodb://localhost:27017";
         MongoClient client = new MongoClient(connectionString);
 
         string databaseName = "Twitter";
-        string collectionName = "tweet";
+        string collectionName = "Twee";
 
         // Ottieni il riferimento al database
         IMongoDatabase database = client.GetDatabase(databaseName);
@@ -309,24 +313,39 @@ public class Utils
         */
         var document = new BsonDocument();
 
-        document.Add("sentimento", sentimento);
-
-        foreach (var outerKey in lemmi.Keys)
+        foreach (string em in lemmiArray.Keys)
         {
-            var outerDict = lemmi[outerKey];
-            var innerDoc = new BsonDocument();
-
-            foreach (var innerKey in outerDict.Keys)
+            Console.WriteLine(em.ToString());
+            document = new BsonDocument
             {
-                var innerValue = outerDict[innerKey];
-                innerDoc.Add(innerKey, innerValue);
-            }
 
-            document.Add(outerKey, innerDoc);
+                { "id", em.ToString() },
+                { "doc_numer", 3 },
+                { "hastags", new BsonArray { "elem", "freq" } }
+
+
+
+            };
+            collection.InsertOne(document);
+
         }
 
+        /*
+                foreach (var outerKey in lemmi.Keys)
+                {
+                    var outerDict = lemmi[outerKey];
+                    var innerDoc = new BsonDocument();
+
+                    foreach (var innerKey in outerDict.Keys)
+                    {
+                        var innerValue = outerDict[innerKey];
+                        innerDoc.Add(innerKey, innerValue);
+                    }
+
+                    document.Add(outerKey, innerDoc);
+                }*/
+
         // Inserisci il documento nel database
-        collection.InsertOne(document);
 
 
     }
@@ -470,7 +489,9 @@ public class Utils
                                         string[] splittedEmoji, string[] splittedEmoticons,
                                         Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies,
                                         Dictionary<string, Dictionary<string, double>> lemmi,
-                                        Dictionary<string, string> splittedSlagWords)
+                                        Dictionary<string, string> splittedSlagWords,
+                                        Dictionary<string, string> postags
+)
     {
         string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
         //string tweetPath = "Twitter messaggi/test.txt";
@@ -492,6 +513,15 @@ public class Utils
         //tokenizzazione del tweet
         WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
         string[] tokensNLP = tokenizer.tokenize(text);
+
+        //string[] tags = POStagger(tokensNLP);
+
+        //for (int i = 0; i < tokensNLP.Length; i++)
+        // {
+        //  postags.Add(tokensNLP[i], tags[i]);
+
+        //}
+
         List<string> tokensNLPList = new List<string>(tokensNLP);
 
         //rimozione username e url
@@ -558,13 +588,13 @@ public class Utils
                 }
             }
 
-            foreach (char stop in stopwords)
-            {
-                if(tokeNLP.Contains(stop))
-                {
-                    tokeNLP.Remove(stop);
-                }
-            }
+            // foreach (char stop in stopwords)
+            // {
+            //     if (tokeNLP.Contains(stop))
+            //     {
+            //         tokeNLP.Remove(stop);
+            //     }
+            // }
 
             foreach (string lem in lemmi.Keys)
             {
@@ -769,5 +799,37 @@ public class Utils
 
         return tags;
     }
-    
+    public static string[] POStagger(string[] tokensNLP)
+    {
+        var modelPath = "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin";
+
+        java.io.InputStream inputStream = new java.io.FileInputStream(modelPath);
+        // Utilizzo dell'oggetto InputStream nel costruttore di POSModel
+        POSModel posModel = new POSModel(inputStream);
+
+        // Inizializza il POSTagger con il modello POS
+        POSTaggerME posTagger = new POSTaggerME(posModel);
+
+        // Tokenizzazione del testo
+        Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
+
+
+        // Esegui il POS tagging sui token
+        string[] tags = posTagger.tag(tokensNLP);
+
+        // Stampa i token e i rispettivi POS tags
+        for (int i = 0; i < tokensNLP.Length; i++)
+        {
+            Console.WriteLine(tokensNLP[i] + " -> " + tags[i]);
+        }
+
+        //Printing the tokens 
+        foreach (string token in tokensNLP)
+        {
+            Console.WriteLine(token);
+        }
+
+        return tags;
+    }
+
 }

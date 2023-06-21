@@ -32,28 +32,67 @@ namespace HelloWorld
             //Dictionary<sentimento, Dictionary<lemma, Dictionary<risorsa, counter>>>
             Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
 
+            /* Dictionary<Tokens, Dictionary<string, int>> tokens = new Dictionary<Tokens, Dictionary<string, int>>()
+             {
+                 { Tokens.hashtag, new Dictionary<string, int>() },
+                 { Tokens.emoticon, new Dictionary<string, int>() },
+                 { Tokens.emoji, new Dictionary<string, int>() }
+             };*/
+
+            Dictionary<Emotions, Dictionary<Tokens, Dictionary<string, int>>> tokensArray = new Dictionary<Emotions, Dictionary<Tokens, Dictionary<string, int>>>();
+
+            Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies = new Dictionary<Emotions, Dictionary<string, int>>();
+            Dictionary<string, string> postags = new Dictionary<string, string>();
+
+            //string text = File.ReadAllText("Twitter messaggi/dataset_dt_anger_60k.txt");
+
+
+            Emotions em = Emotions.anticipation;
+            //foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
+            //{
+            Dictionary<string, Dictionary<string, double>> lemmi = Utils.LemmasToDictionary(em);
             Dictionary<Tokens, Dictionary<string, int>> tokens = new Dictionary<Tokens, Dictionary<string, int>>()
             {
                 { Tokens.hashtag, new Dictionary<string, int>() },
                 { Tokens.emoticon, new Dictionary<string, int>() },
                 { Tokens.emoji, new Dictionary<string, int>() }
             };
+            lemmiArray[em.ToString()] = lemmi;
+            //Utils.StampaDizionario(lemmi);
+            //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
+            //Utils.DeleteDatabase();
+            //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
+            Utils.TweetProcessing(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords, postags);
+            tokensArray[em] = tokens;
+            //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString(), lemmiArray, tokens);
+            //}
 
-            Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies = new Dictionary<Emotions, Dictionary<string, int>>();
 
-            //string text = File.ReadAllText("Twitter messaggi/dataset_dt_anger_60k.txt");
-
-            foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
+            foreach (var kvp in tokensArray)
             {
-                Dictionary<string, Dictionary<string, double>> lemmi = Utils.LemmasToDictionary(em);
-                lemmiArray[em.ToString()] = lemmi;
-                //Utils.StampaDizionario(lemmi);
-                //Utils.UploadLemmiOfLexres(lemmi, em.ToString());
-                //Utils.DeleteDatabase();
-                //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
-                Utils.TweetProcessing(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords);
-                //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString());
+                Emotions emotion = kvp.Key;
+                Dictionary<Tokens, Dictionary<string, int>> innerDictionary = kvp.Value;
+
+                //Console.WriteLine("Emotion: " + emotion);
+
+                foreach (var innerKvp in innerDictionary)
+                {
+                    Tokens token = innerKvp.Key;
+                    Dictionary<string, int> valueDictionary = innerKvp.Value;
+
+                    //Console.WriteLine("Token: " + token);
+
+                    foreach (var valueKvp in valueDictionary)
+                    {
+                        string key = valueKvp.Key;
+                        int value = valueKvp.Value;
+
+                        Console.WriteLine("Emotion: " + emotion + "Token: " + token + "Key: " + key + ", Value: " + value);
+                    }
+                }
             }
+
+
 
             //Dictionary<string, Dictionary<string, double>> lemmiw = new Dictionary<string, Dictionary<string, double>>();
 
