@@ -1,14 +1,9 @@
-using System;
-using System.Linq;
-using System.Data;
 using MySql.Data.MySqlClient;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Globalization;
 using opennlp.tools.tokenize;
 using opennlp.tools.postag;
-using opennlp.tools.util;
-using System.Reflection;
 
 public class Utils
 {
@@ -113,7 +108,7 @@ public class Utils
         {
             splittedText[i] = splittedText[i].Trim();
             splittedText[i] = splittedText[i].Replace("\r\n", "");
-            splittedText[i] = splittedText[i].Substring(2, splittedText[i].Length - 3);
+            //splittedText[i] = splittedText[i].Substring(2, splittedText[i].Length - 3);
 
             //Console.WriteLine(splittedText[i]);
 
@@ -514,6 +509,9 @@ public class Utils
 
         string text = File.ReadAllText(tweetPath);
 
+        //string translatedText = Regex.Unescape(text);
+        //Console.WriteLine(translatedText);
+
         string stopwordsText = "[,?!.;:/()& _+=<>\"]";
 
         char[] stopwords = stopwordsText.ToCharArray();
@@ -583,7 +581,7 @@ public class Utils
 
             foreach (string emoji in splittedEmoji)
             {
-                if (tokeNLP.Contains(emoji))
+                if (StringToUTF32(tokeNLP).Contains(emoji))
                 {
                     if (tokens[Tokens.emoji].ContainsKey(emoji))
                     {
@@ -840,4 +838,28 @@ public class Utils
         return tags;
     }
 
+    static string StringToUTF32(string input)
+    {
+        int[] utf32Codes = new int[input.Length];
+
+        for (int i = 0; i < input.Length; i++)
+        {
+            utf32Codes[i] = char.ConvertToUtf32(input, i);
+            if (char.IsSurrogatePair(input, i))
+                i++;  // Skip the low surrogate of the surrogate pair
+        }
+
+        string utf32Hex = "";
+
+        foreach (int code in utf32Codes)
+        {
+            utf32Hex += code.ToString("X8");
+        }
+
+        string codePointHex = utf32Hex.Substring(0, 8);
+        uint codePoint = uint.Parse(codePointHex, System.Globalization.NumberStyles.HexNumber);
+        string unicodeEscape = "\\U" + codePoint.ToString("X8");
+
+        return "u\'" + unicodeEscape + "\'";
+    }
 }

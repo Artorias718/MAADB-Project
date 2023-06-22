@@ -1,5 +1,3 @@
-using System;
-
 public enum Emotions
 {
     anger,
@@ -33,5 +31,4 @@ public enum Tokens
     hashtag,
     emoji,
     emoticon
-
 }

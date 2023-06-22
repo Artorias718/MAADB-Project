@@ -1,14 +1,4 @@
-using System.IO;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using System.Threading;
-using opennlp.tools.tokenize;
-using opennlp.tools.postag;
-using opennlp.tools.util;
-using System.Reflection;
-
-namespace HelloWorld
+namespace ProgettoMAADB
 {
     class Program
     {
@@ -67,7 +57,6 @@ namespace HelloWorld
             Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString(), lemmiArray, tokens);
             //}
 
-
             foreach (var kvp in tokensArray)
             {
                 Emotions emotion = kvp.Key;
@@ -91,8 +80,6 @@ namespace HelloWorld
                     }
                 }
             }
-
-
 
             //Dictionary<string, Dictionary<string, double>> lemmiw = new Dictionary<string, Dictionary<string, double>>();
 
