@@ -294,7 +294,7 @@ public class Utils
         // Ottieni il riferimento alla collezione
         var collection = database.GetCollection<BsonDocument>(collectionName);
 
-        /* Salva ogni lemma come un documento 
+        /*Salva ogni lemma come un documento 
         foreach (var item in lemmi)
         {
             var document = new BsonDocument();
@@ -311,43 +311,51 @@ public class Utils
             collection.InsertOne(document);
         }
         */
+
         var document = new BsonDocument();
 
         foreach (string em in lemmiArray.Keys)
         {
             Console.WriteLine(em.ToString());
+
+            Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
+            BsonDocument innerDocumentHashtag = new BsonDocument(innerDictionaryHashtag);
+
+            Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
+            BsonDocument innerDocumentEmoji = new BsonDocument(innerDictionaryEmoji);
+
+            Dictionary<string, int> innerDictionaryEmoticon = tokens[Tokens.emoticon];
+            BsonDocument innerDocumentEmoticon = new BsonDocument(innerDictionaryEmoticon);
+
             document = new BsonDocument
             {
-
                 { "id", em.ToString() },
                 { "doc_numer", 3 },
-                { "hastags", new BsonArray { "elem", "freq" } }
-
-
-
+                { "hastags", innerDocumentHashtag },
+                { "emoji", innerDocumentEmoji },
+                { "emoticon", innerDocumentEmoticon }
             };
+
             collection.InsertOne(document);
-
         }
-
+        
         /*
-                foreach (var outerKey in lemmi.Keys)
+            foreach (var outerKey in lemmi.Keys)
+            {
+                var outerDict = lemmi[outerKey];
+                var innerDoc = new BsonDocument();
+
+                foreach (var innerKey in outerDict.Keys)
                 {
-                    var outerDict = lemmi[outerKey];
-                    var innerDoc = new BsonDocument();
+                    var innerValue = outerDict[innerKey];
+                    innerDoc.Add(innerKey, innerValue);
+                }
 
-                    foreach (var innerKey in outerDict.Keys)
-                    {
-                        var innerValue = outerDict[innerKey];
-                        innerDoc.Add(innerKey, innerValue);
-                    }
+                document.Add(outerKey, innerDoc);
+            }
+        */
 
-                    document.Add(outerKey, innerDoc);
-                }*/
-
-        // Inserisci il documento nel database
-
-
+        //Inserisci il documento nel database
     }
 
     public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Emotions em)
@@ -491,7 +499,7 @@ public class Utils
                                         Dictionary<string, Dictionary<string, double>> lemmi,
                                         Dictionary<string, string> splittedSlagWords,
                                         Dictionary<string, string> postags
-)
+    )
     {
         string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
         //string tweetPath = "Twitter messaggi/test.txt";

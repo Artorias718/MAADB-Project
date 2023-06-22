@@ -47,7 +47,7 @@ namespace HelloWorld
             //string text = File.ReadAllText("Twitter messaggi/dataset_dt_anger_60k.txt");
 
 
-            Emotions em = Emotions.anticipation;
+            Emotions em = Emotions.anger;
             //foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             //{
             Dictionary<string, Dictionary<string, double>> lemmi = Utils.LemmasToDictionary(em);
@@ -64,7 +64,7 @@ namespace HelloWorld
             //Utils.readTwitter(em, tokens, splittedEmoji, splittedEmoticons);
             Utils.TweetProcessing(em, tokens, splittedEmoji, splittedEmoticons, lemmaFrequencies, lemmi, splittedSlagWords, postags);
             tokensArray[em] = tokens;
-            //Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString(), lemmiArray, tokens);
+            Utils.UploadLemmiOfLexresMongoDB(lemmi, em.ToString(), lemmiArray, tokens);
             //}
 
 
@@ -87,7 +87,7 @@ namespace HelloWorld
                         string key = valueKvp.Key;
                         int value = valueKvp.Value;
 
-                        Console.WriteLine("Emotion: " + emotion + "Token: " + token + "Key: " + key + ", Value: " + value);
+                        Console.WriteLine("Emotion: " + emotion + ", Token: " + token + ", Key: " + key + ", Value: " + value);
                     }
                 }
             }

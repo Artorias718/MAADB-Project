@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\harbi\\Desktop\\MDL\\progetto C#.csproj": {}
+    "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\progetto C#.csproj": {}
   },
   "projects": {
-    "C:\\Users\\harbi\\Desktop\\MDL\\progetto C#.csproj": {
+    "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\progetto C#.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\harbi\\Desktop\\MDL\\progetto C#.csproj",
+        "projectUniqueName": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\progetto C#.csproj",
         "projectName": "progetto C#",
-        "projectPath": "C:\\Users\\harbi\\Desktop\\MDL\\progetto C#.csproj",
-        "packagesPath": "C:\\Users\\harbi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\harbi\\Desktop\\MDL\\obj\\",
+        "projectPath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\progetto C#.csproj",
+        "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\HP\\OneDrive\\Desktop\\MAADB\\progetto-MAADB\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\harbi\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
@@ -67,7 +67,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
         }
       }
     }
