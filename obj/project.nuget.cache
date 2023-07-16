@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "R7eMLopmkWHHF1VTZMQIYeNUtR1LijWITE23SkJMSgSDst80dO/mpfti5izFDEbvjADcZN1wCdxM/FGsr5fR4g==",
+  "dgSpecHash": "Gnhu7+pRDTDl6rhKwvsf3bELB5+8rA27Fqoo6S9V10J7iOotTY15H+rZVmvw03CjPQeQAacHMfzr5SbubckhTA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj",
+  "projectFilePath": "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\harbi\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",
     "C:\\Users\\harbi\\.nuget\\packages\\awssdk.securitytoken\\3.7.100.14\\awssdk.securitytoken.3.7.100.14.nupkg.sha512",

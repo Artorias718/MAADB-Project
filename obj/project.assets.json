@@ -7431,11 +7431,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj",
+      "projectUniqueName": "c:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj",
       "projectName": "progetto C#",
-      "projectPath": "c:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj",
+      "projectPath": "c:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj",
       "packagesPath": "C:\\Users\\harbi\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\harbi\\Desktop\\NewPull\\obj\\",
+      "outputPath": "c:\\Users\\harbi\\Desktop\\Latest MADDB project\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\harbi\\AppData\\Roaming\\NuGet\\NuGet.Config"

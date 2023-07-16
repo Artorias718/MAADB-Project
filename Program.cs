@@ -37,26 +37,41 @@ namespace HelloWorld
             Dictionary<string, string> postags = new Dictionary<string, string>();
 
 
-            Emotions em = Emotions.anger;
-            //foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
-            //{
-            SentimentData Data = new SentimentData(
-                LemmasToDictionary(em),
-                em.ToString(),
-                LemmasToDictionary(em),
-                CreateTokensDictionary(),
-                new Dictionary<string, int>()
-            );
+            //Emotions em = Emotions.anger;
+            foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
+            {
+                // TweetData Data = new TweetData(
+                //     LemmasToDictionary(em),
+                //     em.ToString(),
+                //     LemmasToDictionary(em),
+                //     CreateTokensDictionary(),
+                //     new Dictionary<string, int>()
+                // );
 
-            //Utils.StampaDizionario(lemmi);
-            //Utils.UploadPostgres(lemmi, em.ToString());
-            //Utils.DeleteDatabase();
-            TweetProcessing(Data, splittedSlagWords, splittedEmoticons, splittedEmoji);
-            UploadLemmiOfLexresMongoDB(Data);
+                //Utils.StampaDizionario(lemmi);
+                //Utils.UploadPostgres(lemmi, em.ToString());
+                //Utils.DeleteDatabase();
 
-            lemmiArray[em.ToString()] = Data.Lemmi;
-            tokensArray[em] = Data.Tokens;
-            //}
+                UploadLexResourcesMongoDB(em);
+
+                UploadLexResourcesWordsMongoDB(em);
+                //TODO 
+                //cambiare il nome della risorsa con la referenza a LexResource
+                //Aggiungere la seconda referenza in Tweet
+                //Riprovare le aggregations
+
+                List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
+
+                foreach (TweetData tweet in ProcessedTweets)
+                {
+                    UploadTweetMongoDB(tweet);
+                }
+
+
+
+                //lemmiArray[em.ToString()] = Data.Lemmi;
+                //tokensArray[em] = Data.Tokens;
+            }
 
         }
     }

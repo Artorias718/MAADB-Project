@@ -2,12 +2,12 @@ public enum Emotions
 {
     anger,
     anticipation,
-    disgust,
-    fear,
-    joy,
-    surprise,
-    sadness,
-    trust
+    // disgust,
+    // fear,
+    // joy,
+    //surprise,
+    //sadness,
+    //trust
 }
 
 public enum Resources

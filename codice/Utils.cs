@@ -274,13 +274,63 @@ namespace HelloWorld
 
         }
 
-        public static void UploadLemmiOfLexresMongoDB(SentimentData data)
+        public static void UploadLexResourcesMongoDB(Emotions em)
         {
-            var lemmi = data.Lemmi;
-            var sentimento = data.Sentimento;
-            var lemmiArray = data.LemmiArray;
-            var tokens = data.Tokens;
-            var lemmaFrequencies = data.LemmaFrequencies;
+            string startPath = $"Risorse lessicali/{em}/";
+            string endPath = $"_{em}.txt";
+            string middlePath = $"_{em}";
+
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "LexResources";
+
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+
+
+            foreach (Resources res in Resources.GetValues(typeof(Resources)))
+            {
+                if (res == Resources.nuova_risorsa)
+                {
+                    continue;
+
+                }
+
+                try
+                {
+                    string resString = res.ToString();
+                    string path = startPath + resString + endPath;
+                    if (File.Exists(path))
+                    {
+                        string[] lines = File.ReadAllLines(path);
+                        int count = lines.Length;
+
+                        var document = new BsonDocument
+                {
+                    { "id", resString + middlePath},
+                    {"sentiment", em.ToString()},
+                    {"num_words", count}
+                };
+
+                        collection.InsertOne(document);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+
+            }
+        }
+
+        public static void UploadLexResourcesWordsMongoDB(Emotions em)
+        {
+            var lemmi = LemmasToDictionary(em);
+            var sentimento = em.ToString();
 
             string connectionString = "mongodb://localhost:27017";
             MongoClient client = new MongoClient(connectionString);
@@ -292,17 +342,7 @@ namespace HelloWorld
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-
             Console.WriteLine(sentimento.ToString());
-
-            Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
-            BsonDocument innerDocumentHashtag = new BsonDocument(innerDictionaryHashtag);
-
-            Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
-            BsonDocument innerDocumentEmoji = new BsonDocument(innerDictionaryEmoji);
-
-            Dictionary<string, int> innerDictionaryEmoticon = tokens[Tokens.emoticon];
-            BsonDocument innerDocumentEmoticon = new BsonDocument(innerDictionaryEmoticon);
 
             var lex_res_collection = database.GetCollection<BsonDocument>("Lex_resources_words");
 
@@ -337,33 +377,70 @@ namespace HelloWorld
 
                 lex_res_collection.InsertOne(res);
             }
-            var words = new BsonArray();
 
-            foreach (var outerKey in lems.Keys)
+        }
+
+        public static void UploadTweetMongoDB(TweetData data)
+        {
+            var lemmi = LemmasToDictionary(data.Sentimento);
+            var sentimento = data.Sentimento;
+            var tokens = data.Tokens;
+
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+
+            Console.WriteLine(sentimento.ToString());
+
+            Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
+            BsonDocument innerDocumentHashtag = new BsonDocument(innerDictionaryHashtag);
+
+            Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
+            BsonDocument innerDocumentEmoji = new BsonDocument(innerDictionaryEmoji);
+
+            Dictionary<string, int> innerDictionaryEmoticon = tokens[Tokens.emoticon];
+            BsonDocument innerDocumentEmoticon = new BsonDocument(innerDictionaryEmoticon);
+
+            var lex_res_collection = database.GetCollection<BsonDocument>("Lex_resources_words");
+
+            var lems = new Dictionary<string, List<string>>();
+
+            var words = new BsonArray();
+            foreach (var outerKey in data.Lemmi)
             {
                 var word = new BsonDocument{
 
                 {"lemma", outerKey},
-                {"pos", POS_word_tagger(outerKey)},
-                {"freq", lemmaFrequencies[outerKey]}
+                {"pos", POS_word_tagger(outerKey)}
 
                 };
 
                 var filter = Builders<BsonDocument>.Filter.Eq("lemma", outerKey);
                 var filteredDoc = lex_res_collection.Find(filter).FirstOrDefault();
 
-
-                if (filter != null)
+                try
                 {
-                    // Ottieni l'ID del documento lex_res_collection e aggiungi il campo di referenza nel documento word
-                    var id = filteredDoc["_id"].AsObjectId;
-                    word.Add("lex_res_reference", id);
-                }
+                    if (filter != null)
+                    {
+                        // Ottieni l'ID del documento lex_res_collection e aggiungi il campo di referenza nel documento word
+                        var id = filteredDoc["_id"].AsObjectId;
+                        word.Add("lex_res_reference", id);
+                    }
 
+                }
+                catch
+                {
+
+                }
                 words.Add(word);
 
             }
-
 
             var document = new BsonDocument
                 {
@@ -376,8 +453,6 @@ namespace HelloWorld
                 };
 
             collection.InsertOne(document);
-
-
 
         }
 
@@ -397,6 +472,7 @@ namespace HelloWorld
             string endPath = $"_{em}.txt";
             string startPathConScore = $"Risorse lessicali/ConScore/";
             string endPathWithScore = $"_tab.tsv";
+
 
 
             //popola lemmaWithscore con le risorse lessicali con lo score in afinn.txt
@@ -515,123 +591,120 @@ namespace HelloWorld
 
         }
 
-        public static void TweetProcessing(SentimentData data, Dictionary<string, string> splittedSlagWords, string[] splittedEmoticons, string[] splittedEmoji)
+        public static List<TweetData> TweetProcessing(Emotions em, Dictionary<string, string> splittedSlagWords, string[] splittedEmoticons, string[] splittedEmoji)
         {
-            var lemmi = data.Lemmi;
-            var sentimento = data.Sentimento;
-            var lemmiArray = data.LemmiArray;
-            var tokens = data.Tokens;
-            var lemmaFrequencies = data.LemmaFrequencies;
-            string tweetPath = $"Twitter messaggi/dataset_dt_{data.Sentimento}_60k.txt";
+
+
+
+            List<TweetData> Tweets = new List<TweetData>();
+            string tweetPath = $"Twitter messaggi/dataset_dt_{em.ToString()}_60k.txt";
             //string tweetPath = "Twitter messaggi/test.txt";
-
-            foreach (string l in lemmi.Keys)
+            foreach (string line in File.ReadLines(tweetPath))
             {
-                lemmaFrequencies[l] = 0;
-            }
+                TweetData Data = new TweetData(
+                em,
+                CreateTokensDictionary()
+                );
 
+                var tokens = Data.Tokens;
 
-            string text = File.ReadAllText(tweetPath);
+                string stopwordsText = "[,?!.;:/()& _+=<>\"]";
 
-            string stopwordsText = "[,?!.;:/()& _+=<>\"]";
+                char[] stopwords = stopwordsText.ToCharArray();
 
-            char[] stopwords = stopwordsText.ToCharArray();
+                WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
 
-            WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+                string[] tokensNLP = tokenizer.tokenize(line);
 
-            string[] tokensNLP = tokenizer.tokenize(text);
+                Data.Lemmi = tokensNLP;
 
-            //string[] tags = POStagger(tokensNLP);
+                //string[] tags = POStagger(tokensNLP);
 
-            //for (int i = 0; i < tokensNLP.Length; i++)
-            // {
-            //  postags.Add(tokensNLP[i], tags[i]);
-
-            //}
-
-            List<string> tokensNLPList = new List<string>(tokensNLP);
-
-            //rimozione username e url
-            tokensNLPList.Remove("USERNAME");
-            tokensNLPList.Remove("URL");
-
-            //sostituzione slag words
-            foreach (var kv in splittedSlagWords)
-            {
-                if (tokensNLPList.Contains(kv.Key))
-                {
-                    int index = tokensNLPList.IndexOf(kv.Key);
-
-                    if (index != -1)
-                    {
-                        tokensNLPList.RemoveAt(index);
-                        tokensNLPList.InsertRange(index, tokenizer.tokenize(kv.Value));
-                    }
-                }
-            }
-
-            //popolamento dizionario dei tokens
-            foreach (string tokeNLP in tokensNLPList)
-            {
-                if (tokeNLP.Contains('#'))
-                {
-                    if (tokens[Tokens.hashtag].ContainsKey(tokeNLP))
-                    {
-                        tokens[Tokens.hashtag][tokeNLP]++;
-                    }
-                    else
-                    {
-                        tokens[Tokens.hashtag].Add(tokeNLP, 1);
-                    }
-                }
-
-                foreach (string emo in splittedEmoticons)
-                {
-                    if (tokeNLP.Contains(emo))
-                    {
-                        if (tokens[Tokens.emoticon].ContainsKey(emo))
-                        {
-                            tokens[Tokens.emoticon][emo]++;
-                        }
-                        else
-                        {
-                            tokens[Tokens.emoticon].Add(emo, 1);
-                        };
-                    }
-                }
-
-                foreach (string emoji in splittedEmoji)
-                {
-
-                    if (StringToUTF32(tokeNLP).Contains(emoji))
-                    {
-                        //Console.WriteLine(tokeNLP);
-                        if (tokens[Tokens.emoji].ContainsKey(emoji))
-                        {
-                            tokens[Tokens.emoji][emoji]++;
-                        }
-                        else
-                        {
-                            tokens[Tokens.emoji].Add(emoji, 1);
-                        }
-                    }
-                }
-
-                // foreach (char stop in stopwords)
+                //for (int i = 0; i < tokensNLP.Length; i++)
                 // {
-                //     if (tokeNLP.Contains(stop))
-                //     {
-                //         tokeNLP.Remove(stop);
-                //     }
-                // }
+                //  postags.Add(tokensNLP[i], tags[i]);
 
-                foreach (string lem in lemmi.Keys)
+                //}
+
+                List<string> tokensNLPList = new List<string>(tokensNLP);
+
+                //rimozione username e url
+                tokensNLPList.Remove("USERNAME");
+                tokensNLPList.Remove("URL");
+
+                //sostituzione slag words
+                foreach (var kv in splittedSlagWords)
                 {
-                    if (tokeNLP.Contains(lem))
+                    if (tokensNLPList.Contains(kv.Key))
                     {
-                        lemmaFrequencies[lem]++;
+                        int index = tokensNLPList.IndexOf(kv.Key);
+
+                        if (index != -1)
+                        {
+                            tokensNLPList.RemoveAt(index);
+                            tokensNLPList.InsertRange(index, tokenizer.tokenize(kv.Value));
+                        }
                     }
                 }
+
+                //popolamento dizionario dei tokens
+                foreach (string tokeNLP in tokensNLPList)
+                {
+                    if (tokeNLP.Contains('#'))
+                    {
+                        if (tokens[Tokens.hashtag].ContainsKey(tokeNLP))
+                        {
+                            tokens[Tokens.hashtag][tokeNLP]++;
+                        }
+                        else
+                        {
+                            tokens[Tokens.hashtag].Add(tokeNLP, 1);
+                        }
+                    }
+
+                    foreach (string emo in splittedEmoticons)
+                    {
+                        if (tokeNLP.Contains(emo))
+                        {
+                            if (tokens[Tokens.emoticon].ContainsKey(emo))
+                            {
+                                tokens[Tokens.emoticon][emo]++;
+                            }
+                            else
+                            {
+                                tokens[Tokens.emoticon].Add(emo, 1);
+                            };
+                        }
+                    }
+
+                    foreach (string emoji in splittedEmoji)
+                    {
+
+                        if (StringToUTF32(tokeNLP).Contains(emoji))
+                        {
+                            //Console.WriteLine(tokeNLP);
+                            if (tokens[Tokens.emoji].ContainsKey(emoji))
+                            {
+                                tokens[Tokens.emoji][emoji]++;
+                            }
+                            else
+                            {
+                                tokens[Tokens.emoji].Add(emoji, 1);
+                            }
+                        }
+                    }
+
+                    // foreach (char stop in stopwords)
+                    // {
+                    //     if (tokeNLP.Contains(stop))
+                    //     {
+                    //         tokeNLP.Remove(stop);
+                    //     }
+                    // }
+                }
+
+                Tweets.Add(Data);
+
             }
 
             /*foreach (var kv in tokens)
@@ -654,6 +727,7 @@ namespace HelloWorld
                     Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
                 }
             }*/
+            return Tweets;
         }
 
         public static void readTwitter(string nameFile, string[] splittedText)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj": {}
+    "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj": {}
   },
   "projects": {
-    "C:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj": {
+    "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj",
+        "projectUniqueName": "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj",
         "projectName": "progetto C#",
-        "projectPath": "C:\\Users\\harbi\\Desktop\\NewPull\\progetto C#.csproj",
+        "projectPath": "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\progetto C#.csproj",
         "packagesPath": "C:\\Users\\harbi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\harbi\\Desktop\\NewPull\\obj\\",
+        "outputPath": "C:\\Users\\harbi\\Desktop\\Latest MADDB project\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\harbi\\AppData\\Roaming\\NuGet\\NuGet.Config"
