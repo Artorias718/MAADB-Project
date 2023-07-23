@@ -8,6 +8,7 @@ using opennlp.tools.postag;
 using opennlp.tools.util;
 using System.Reflection;
 using static HelloWorld.Utils;
+using static HelloWorld.MongoDBAggregations;
 
 namespace HelloWorld
 {
@@ -27,7 +28,7 @@ namespace HelloWorld
             string[] splittedOthersEmoji = ExtractEmoji("Risorse lessicali/OthersEmoji.txt");
             string[] splittedAdditionalEmoji = ExtractEmoji("Risorse lessicali/AdditionalEmoji.txt");
 
-            string[] splittedEmoji = splittedEmojiNeg.Concat(splittedEmojiPos).Concat(splittedOthersEmoji).Concat(splittedAdditionalEmoji).ToArray();
+            string[] splittedEmoji = splittedEmojiNeg.Concat(splittedEmojiPos).Concat(splittedOthersEmoji).Concat(splittedAdditionalEmoji).Distinct().ToArray();
 
             Dictionary<string, Dictionary<string, Dictionary<string, double>>> lemmiArray = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
 
@@ -40,6 +41,7 @@ namespace HelloWorld
             //Emotions em = Emotions.anger;
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
+                int count = 1;
                 // TweetData Data = new TweetData(
                 //     LemmasToDictionary(em),
                 //     em.ToString(),
@@ -52,20 +54,22 @@ namespace HelloWorld
                 //Utils.UploadPostgres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
 
-                UploadLexResourcesMongoDB(em);
 
+
+                UploadLexResourcesMongoDB(em);
                 UploadLexResourcesWordsMongoDB(em);
-                //TODO 
-                //cambiare il nome della risorsa con la referenza a LexResource
-                //Aggiungere la seconda referenza in Tweet
-                //Riprovare le aggregations
 
                 List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
 
                 foreach (TweetData tweet in ProcessedTweets)
                 {
-                    UploadTweetMongoDB(tweet);
+                    UploadTweetMongoDB(tweet, count);
+                    count++;
                 }
+
+                //getHashtagFrequencies(em);
+                //getEmojiFrequencies(em);
+                getEmoticonsFrequencies(em);
 
 
 

@@ -1,8 +1,8 @@
 public enum Emotions
 {
-    anger,
-    anticipation,
-    // disgust,
+    anger
+    //anticipation,
+    //disgust,
     // fear,
     // joy,
     //surprise,

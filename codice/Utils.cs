@@ -107,20 +107,21 @@ namespace HelloWorld
             string text = File.ReadAllText(fileUrl).Substring(start + 1, end - start - 1);
             string[] splittedText = text.Split(',');
 
+            List<string> uniqueEmojiList = new List<string>();
+
+
             for (int i = 0; i < splittedText.Length; i++)
             {
                 splittedText[i] = splittedText[i].Trim();
                 splittedText[i] = splittedText[i].Replace("\r\n", "");
                 splittedText[i] = splittedText[i].Substring(2, splittedText[i].Length - 3);
-
-                //Console.WriteLine(splittedText[i]);
-
-                //splittedText[i] = splittedText[i].Substring(1, splittedText[i].Length - 2);
-
-                //Console.WriteLine(splittedText[i]);
+                string emoji = splittedText[i];
+                uniqueEmojiList.Add(emoji);
             }
 
-            return splittedText;
+            string[] uniqueEmojiArray = uniqueEmojiList.Distinct().ToArray();
+
+            return uniqueEmojiArray;
         }
 
         public static void StampaDizionario(Dictionary<string, Dictionary<string, double>> d)
@@ -311,7 +312,7 @@ namespace HelloWorld
 
                         var document = new BsonDocument
                 {
-                    { "id", resString + middlePath},
+                    { "_id", resString + middlePath},
                     {"sentiment", em.ToString()},
                     {"num_words", count}
                 };
@@ -380,7 +381,7 @@ namespace HelloWorld
 
         }
 
-        public static void UploadTweetMongoDB(TweetData data)
+        public static void UploadTweetMongoDB(TweetData data, int count)
         {
             var lemmi = LemmasToDictionary(data.Sentimento);
             var sentimento = data.Sentimento;
@@ -396,16 +397,39 @@ namespace HelloWorld
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-            Console.WriteLine(sentimento.ToString());
-
             Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
-            BsonDocument innerDocumentHashtag = new BsonDocument(innerDictionaryHashtag);
-
             Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
-            BsonDocument innerDocumentEmoji = new BsonDocument(innerDictionaryEmoji);
-
             Dictionary<string, int> innerDictionaryEmoticon = tokens[Tokens.emoticon];
-            BsonDocument innerDocumentEmoticon = new BsonDocument(innerDictionaryEmoticon);
+
+            BsonArray innerDocumentHashtag = new BsonArray();
+            BsonArray innerDocumentEmoji = new BsonArray();
+            BsonArray innerDocumentEmoticon = new BsonArray();
+
+            foreach (var i in innerDictionaryHashtag)
+            {
+                for (var a = 0; a < i.Value; a++) //per aggiungere n volte un token nello stesso tweet
+                {
+                    innerDocumentHashtag.Add(i.Key);
+                }
+            }
+
+            foreach (var i in innerDictionaryEmoji)
+            {
+                //sono sbagliati i conunters già quando arrivano qui, sono x2 solo per anger!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                for (var a = 0; a < i.Value; a++) //per aggiungere n volte un token nello stesso tweet
+                {
+                    innerDocumentEmoji.Add(i.Key);
+                }
+            }
+
+            foreach (var i in innerDictionaryEmoticon)
+            {
+                for (var a = 0; a < i.Value; a++) //per aggiungere n volte un token nello stesso tweet
+                {
+                    innerDocumentEmoticon.Add(i.Key);
+                }
+            }
+
 
             var lex_res_collection = database.GetCollection<BsonDocument>("Lex_resources_words");
 
@@ -441,11 +465,10 @@ namespace HelloWorld
                 words.Add(word);
 
             }
-
             var document = new BsonDocument
                 {
                     { "id", sentimento.ToString() },
-                    { "doc_numer", 3 },
+                    { "doc_numer", count },
                     {"words", words},
                     { "hastags", innerDocumentHashtag },
                     { "emoji", innerDocumentEmoji },
@@ -453,7 +476,6 @@ namespace HelloWorld
                 };
 
             collection.InsertOne(document);
-
         }
 
         public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Emotions em)
@@ -519,8 +541,8 @@ namespace HelloWorld
                             {
                                 lemmaWithScore[parola] = new Dictionary<string, double>();
                             }
-
-                            lemmaWithScore[parola][resString] = numero;
+                            string filename = resString + $"_{em}";
+                            lemmaWithScore[parola][filename] = numero;
                         }
                     }
                 }
@@ -544,6 +566,8 @@ namespace HelloWorld
                 {
                     string resString = res.ToString();
                     string path = startPath + resString + endPath;
+                    string filename = resString + $"_{em}";
+
 
                     // Leggi tutti i lemmi presenti nella risorsa lessicale
                     using (StreamReader reader = new StreamReader(path))
@@ -561,7 +585,7 @@ namespace HelloWorld
                             {
                                 //carica nel dizionario i lemmi senza score
                                 Dictionary<string, double> l = lemmi.ContainsKey(lemma) ? lemmi[lemma] : new Dictionary<string, double>();
-                                l[resString] = 1;
+                                l[filename] = 1;
                                 lemmi[lemma] = l;
                                 //se il lemma è presente nel lemmaWithScore, aggiunge anche gli scores delle altre risorse
                                 if (lemmaWithScore.ContainsKey(lemma))
@@ -593,9 +617,6 @@ namespace HelloWorld
 
         public static List<TweetData> TweetProcessing(Emotions em, Dictionary<string, string> splittedSlagWords, string[] splittedEmoticons, string[] splittedEmoji)
         {
-
-
-
             List<TweetData> Tweets = new List<TweetData>();
             string tweetPath = $"Twitter messaggi/dataset_dt_{em.ToString()}_60k.txt";
             //string tweetPath = "Twitter messaggi/test.txt";
@@ -659,6 +680,7 @@ namespace HelloWorld
                         else
                         {
                             tokens[Tokens.hashtag].Add(tokeNLP, 1);
+
                         }
                     }
 
@@ -679,10 +701,8 @@ namespace HelloWorld
 
                     foreach (string emoji in splittedEmoji)
                     {
-
                         if (StringToUTF32(tokeNLP).Contains(emoji))
                         {
-                            //Console.WriteLine(tokeNLP);
                             if (tokens[Tokens.emoji].ContainsKey(emoji))
                             {
                                 tokens[Tokens.emoji][emoji]++;
