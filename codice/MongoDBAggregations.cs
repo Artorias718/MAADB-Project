@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using static HelloWorld.Utils;
+
 
 namespace HelloWorld
 {
@@ -129,6 +131,46 @@ namespace HelloWorld
 
 
         }
+        public static void getWordsFrequencies(Emotions em)
+        {
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
 
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+
+            // Definizione della pipeline di aggregazione
+            var pipeline = new BsonDocument[]
+            {
+                new BsonDocument("$match", new BsonDocument("id", em.ToString())),
+                new BsonDocument("$unwind", "$words"),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", "$words.lemma" },
+                    { "totalCount", new BsonDocument("$sum", 1) }
+                })
+            };
+
+            var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
+
+            generateFrequenciesFiles(result);
+
+            //generateWordCloud(words, frequenze);
+            //Console.WriteLine("Word " + word + "   Count " + count + "\n");
+
+        }
+
+        //TODO 
+        //rimuovere punteggiatura
+        //generare le words clouds e gli istogrammi di conseguenza
+        //ricare tutto sul relazionale
+        //calcoli percentuali per le statsistiche di uso delle risorse lessicali
+        //predisporre la creazione delle nuove risorse
+        //presentazione
     }
 }

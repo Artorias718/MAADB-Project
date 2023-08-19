@@ -521,7 +521,6 @@ C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\ZstdSharp.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\linux-x64\native\libikvm-native.so
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win-x64\native\ikvm-native.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win-x86\native\ikvm-native.dll
-C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\linux\native\libmongocrypt.so
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\osx\native\libmongocrypt.dylib
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\native\mongocrypt.dll
@@ -533,8 +532,6 @@ C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\osx\lib\ne
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\solaris\lib\net6.0\System.Data.Odbc.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\tvos\lib\net6.0\System.Data.Odbc.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Data.Odbc.dll
-C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Threading.AccessControl.dll
@@ -550,3 +547,6 @@ C:\Users\harbi\Desktop\Latest MADDB project\obj\Debug\net7.0\refint\progetto C#.
 C:\Users\harbi\Desktop\Latest MADDB project\obj\Debug\net7.0\progetto C#.pdb
 C:\Users\harbi\Desktop\Latest MADDB project\obj\Debug\net7.0\progetto C#.genruntimeconfig.cache
 C:\Users\harbi\Desktop\Latest MADDB project\obj\Debug\net7.0\ref\progetto C#.dll
+C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\WordCloudSharp.dll
+C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll

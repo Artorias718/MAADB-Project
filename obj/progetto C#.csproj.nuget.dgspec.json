@@ -46,6 +46,14 @@
               "target": "Package",
               "version": "[1.9.4.1, )"
             },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[7.0.0, )"
+            },
+            "WordCloudSharp": {
+              "target": "Package",
+              "version": "[1.1.0, )"
+            },
             "mongocsharpdriver": {
               "target": "Package",
               "version": "[2.19.2, )"

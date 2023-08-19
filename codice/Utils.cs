@@ -4,6 +4,9 @@ using MongoDB.Bson;
 using System.Globalization;
 using opennlp.tools.tokenize;
 using opennlp.tools.postag;
+using WordCloudSharp;
+using System.Drawing;
+
 
 
 namespace HelloWorld
@@ -637,21 +640,12 @@ namespace HelloWorld
 
                 string[] tokensNLP = tokenizer.tokenize(line);
 
-                Data.Lemmi = tokensNLP;
-
-                //string[] tags = POStagger(tokensNLP);
-
-                //for (int i = 0; i < tokensNLP.Length; i++)
-                // {
-                //  postags.Add(tokensNLP[i], tags[i]);
-
-                //}
-
                 List<string> tokensNLPList = new List<string>(tokensNLP);
 
                 //rimozione username e url
                 tokensNLPList.Remove("USERNAME");
                 tokensNLPList.Remove("URL");
+
 
                 //sostituzione slag words
                 foreach (var kv in splittedSlagWords)
@@ -667,6 +661,7 @@ namespace HelloWorld
                         }
                     }
                 }
+
 
                 //popolamento dizionario dei tokens
                 foreach (string tokeNLP in tokensNLPList)
@@ -713,40 +708,48 @@ namespace HelloWorld
                             }
                         }
                     }
-
-                    // foreach (char stop in stopwords)
-                    // {
-                    //     if (tokeNLP.Contains(stop))
-                    //     {
-                    //         tokeNLP.Remove(stop);
-                    //     }
-                    // }
                 }
+
+                //Pulisce tokensNLPList da stopwords and emojis
+                for (int i = 0; i < tokensNLPList.Count; i++)
+                {
+                    string tokeNLP = tokensNLPList[i];
+
+                    foreach (char stop in stopwords)
+                    {
+                        if (tokeNLP.Contains(stop))
+                        {
+                            tokeNLP = tokeNLP.Replace(stop.ToString(), "");
+                       }
+                    }
+
+                    tokensNLPList[i] = tokeNLP;
+                }
+                tokensNLPList.RemoveAll(string.IsNullOrEmpty);
+
+
+                for (int i = 0; i < tokensNLPList.Count; i++)
+                {
+                    string tokeNLP = tokensNLPList[i];
+
+                    foreach (string emo in splittedEmoji)
+                    {
+                        if (StringToUTF32(tokeNLP).Contains(emo))
+                        {
+
+                            tokensNLPList[i] = "";
+                        }
+                    }
+
+                }
+
+                tokensNLPList.RemoveAll(string.IsNullOrEmpty);
+
+                Data.Lemmi = tokensNLPList.ToArray();
 
                 Tweets.Add(Data);
 
             }
-
-            /*foreach (var kv in tokens)
-            {
-                foreach (var risorsa in kv.Value)
-                {
-                    Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
-                }
-            }*/
-
-            /*foreach (string a in tokensNLPList)
-            {
-                Console.WriteLine(a);
-            }*/
-
-            /*foreach (var kv in lemmaFrequencies)
-            {
-                foreach (var risorsa in kv.Value)
-                {
-                    Console.WriteLine($"EMOTIZIONE: {em}, TokenType: {kv.Key}, word: {risorsa.Key}, VALORE: {risorsa.Value}");
-                }
-            }*/
             return Tweets;
         }
 
@@ -1010,6 +1013,44 @@ namespace HelloWorld
         { Tokens.emoticon, new Dictionary<string, int>() },
         { Tokens.emoji, new Dictionary<string, int>() }
     };
+        }
+
+        public static void generateWordCloud(IList<string> words, IList<int> frequenze)
+        {
+
+            var wordCloud = new WordCloud(1300, 1000, useRank: true, fontColor: Color.Blue, allowVerical: true, fontname: "YouYuan");
+
+            var image = wordCloud.Draw(words, frequenze);
+
+            image.Save("word_cloud.png");
+        }
+
+        public static void generateFrequenciesFiles(List<BsonDocument> docs)
+        {
+            IList<string> words = new List<string> { };
+            IList<int> frequenze = new List<int> { };
+
+            foreach (var document in docs)
+            {
+                string? word = document["_id"].ToString();
+                int count = document["totalCount"].AsInt32;
+                words.Add(word);
+                frequenze.Add(count);
+
+                string filePath = "dati.csv";
+
+                // Crea il file CSV e scrivi i dati
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    writer.WriteLine("weight,word"); // Scrive l'intestazione delle colonne
+
+                    for (int i = 0; i < words.Count; i++)
+                    {
+                        string line = string.Format("{0},{1}", frequenze[i], words[i]);
+                        writer.WriteLine(line);
+                    }
+                }
+            }
         }
     }
 }

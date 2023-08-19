@@ -54,8 +54,6 @@ namespace HelloWorld
                 //Utils.UploadPostgres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
 
-
-
                 UploadLexResourcesMongoDB(em);
                 UploadLexResourcesWordsMongoDB(em);
 
@@ -67,9 +65,10 @@ namespace HelloWorld
                     count++;
                 }
 
-                //getHashtagFrequencies(em);
-                //getEmojiFrequencies(em);
-                getEmoticonsFrequencies(em);
+                // getHashtagFrequencies(em);
+                // getEmojiFrequencies(em);
+                // getEmoticonsFrequencies(em);
+                // getWordsFrequencies(em);
 
 
 
