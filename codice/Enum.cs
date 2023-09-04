@@ -1,11 +1,11 @@
 public enum Emotions
 {
-    anger
+    //anger,
     //anticipation
     //disgust
-    // fear,
-    // joy,
-    //surprise,
+    //fear,
+    joy
+    //surprise
     //sadness,
     //trust
 }

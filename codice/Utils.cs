@@ -6,6 +6,9 @@ using opennlp.tools.tokenize;
 using opennlp.tools.postag;
 using WordCloudSharp;
 using System.Drawing;
+using System.Text.RegularExpressions;
+
+
 
 
 
@@ -143,6 +146,65 @@ namespace HelloWorld
             }
         }
 
+
+        public static int checkPresence(string l, string em, string nome_risorsa)
+        {
+            string startPath = $"Risorse lessicali/{em}/";
+            string endPath = $"_{em}.txt";
+
+            int isPresent = 0;
+
+            if (File.Exists(startPath + nome_risorsa + endPath))
+            {
+                using (StreamReader reader = new StreamReader(startPath + nome_risorsa + endPath))
+                {
+                    string? line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] lineParts = line.Split('\t');
+                        string parola = lineParts[0];
+                        if (l == parola)
+                        {
+                            isPresent = 1;
+                        }
+                    }
+                }
+            }
+            return isPresent;
+        }
+
+        public static double? getScore(string l, string nome_risorsa)
+        {
+
+            string startPathConScore = $"Risorse lessicali/ConScore/";
+            string endPathWithScore = $"_tab.tsv";
+
+            double? score = null;
+            string path = startPathConScore + nome_risorsa + endPathWithScore;
+
+            if (File.Exists(path))
+            {
+
+                // Leggi tutti i lemmi presenti nella risorsa lessicale
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    string? line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] lineParts = line.Split('\t');
+                        string parola = lineParts[0];
+                        if (l == parola)
+                        {
+                            score = double.Parse(lineParts[1], CultureInfo.GetCultureInfo("en-US"));
+                        }
+
+                    }
+                }
+            }
+
+            return score;
+        }
+
         public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
         {
             MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
@@ -181,76 +243,75 @@ namespace HelloWorld
             }
 
 
-            string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS)" +
-                                                "VALUES (@lemma, @sentimento, @EmoSN, @SentiSense, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS);";
+            string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense, NRC, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS)" +
+                                                "VALUES (@lemma, @sentimento, @EmoSN, @SentiSense, @NRC, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS);";
             //string innerDictQuery = "INSERT INTO tavoletta (risorsa, value, lemma_id) VALUES (@EmoSN, @SentiSense, @NRC, @AFINN, @ANEW, @Frquency);";
 
+            string[] chiaviDizionarioEsterno = new string[lemmi.Keys.Count];
+            lemmi.Keys.CopyTo(chiaviDizionarioEsterno, 0);
 
             using (MySqlCommand command = new MySqlCommand(outerDictQuery, conn))
             {
 
 
-                foreach (KeyValuePair<string, Dictionary<string, double>> outerPair in lemmi)
+                foreach (string l in chiaviDizionarioEsterno)
                 {
-
-                    command.Parameters.AddWithValue("@lemma", outerPair.Key);
+                    command.Parameters.AddWithValue("@lemma", l);
                     command.Parameters.AddWithValue("@sentimento", sentimento);
 
                     // Aggiungi il valore di default 
-                    command.Parameters.AddWithValue("@EmoSN", 0);
-                    command.Parameters.AddWithValue("@SentiSense", 0);
+                    command.Parameters.AddWithValue("@EmoSN", checkPresence(l, sentimento, "EmoSN"));
+                    command.Parameters.AddWithValue("@SentiSense", checkPresence(l, sentimento, "SentiSense"));
+                    command.Parameters.AddWithValue("@NRC", checkPresence(l, sentimento, "NRC"));
                     command.Parameters.AddWithValue("@AFINN", null);
-                    command.Parameters.AddWithValue("@ANEWARO", null);
-                    command.Parameters.AddWithValue("@ANEWDOM", null);
+                    command.Parameters.AddWithValue("@ANEWARO", getScore(l, "anewAro"));
+                    command.Parameters.AddWithValue("@ANEWDOM", getScore(l, "anewDom"));
                     command.Parameters.AddWithValue("@ANEWPLEAS", null);
 
+                    // foreach (KeyValuePair<string, double> innerPair in outerPair.Value)
+                    // {
+                    //     Resources resource;
+                    //     ResourcesWithScore resourceWithScore;
 
+                    //     if (Enum.TryParse(innerPair.Key, out resource))
+                    //     {
+                    //         switch (resource)
+                    //         {
+                    //             case Resources.EmoSN:
+                    //                 command.Parameters["@EmoSN"].Value = innerPair.Value;
+                    //                 break;
+                    //             case Resources.sentisense:
+                    //                 command.Parameters["@SentiSense"].Value = innerPair.Value;
+                    //                 break;
+                    //         }
+                    //     }
 
-                    foreach (KeyValuePair<string, double> innerPair in outerPair.Value)
-                    {
-                        Resources resource;
-                        ResourcesWithScore resourceWithScore;
-
-                        if (Enum.TryParse(innerPair.Key, out resource))
-                        {
-                            switch (resource)
-                            {
-                                case Resources.EmoSN:
-                                    command.Parameters["@EmoSN"].Value = innerPair.Value;
-                                    break;
-                                case Resources.sentisense:
-                                    command.Parameters["@SentiSense"].Value = innerPair.Value;
-                                    break;
-                            }
-                        }
-
-                        if (Enum.TryParse(innerPair.Key, out resourceWithScore))
-                        {
-                            switch (resourceWithScore)
-                            {
-                                case ResourcesWithScore.afinn:
-                                    command.Parameters["@AFINN"].Value = innerPair.Value;
-                                    break;
-                                case ResourcesWithScore.anewAro:
-                                    command.Parameters["@ANEWARO"].Value = innerPair.Value;
-                                    break;
-                                case ResourcesWithScore.anewDom:
-                                    command.Parameters["@ANEWDOM"].Value = innerPair.Value;
-                                    break;
-                                case ResourcesWithScore.anewPleas:
-                                    command.Parameters["@ANEWPLEAS"].Value = innerPair.Value;
-                                    break;
-                            }
-                        }
-
-
-                    }
+                    //     if (Enum.TryParse(innerPair.Key, out resourceWithScore))
+                    //     {
+                    //         switch (resourceWithScore)
+                    //         {
+                    //             case ResourcesWithScore.afinn:
+                    //                 command.Parameters["@AFINN"].Value = innerPair.Value;
+                    //                 break;
+                    //             case ResourcesWithScore.anewAro:
+                    //                 command.Parameters["@ANEWARO"].Value = innerPair.Value;
+                    //                 break;
+                    //             case ResourcesWithScore.anewDom:
+                    //                 command.Parameters["@ANEWDOM"].Value = innerPair.Value;
+                    //                 break;
+                    //             case ResourcesWithScore.anewPleas:
+                    //                 command.Parameters["@ANEWPLEAS"].Value = innerPair.Value;
+                    //                 break;
+                    //         }
+                    //     }
+                    // }
 
                     command.ExecuteNonQuery();
 
                     command.Parameters.RemoveAt("@lemma");
                     command.Parameters.RemoveAt("@sentimento");
                     command.Parameters.RemoveAt("@EmoSN");
+                    command.Parameters.RemoveAt("@NRC");
                     command.Parameters.RemoveAt("@SentiSense");
                     command.Parameters.RemoveAt("@AFINN");
                     command.Parameters.RemoveAt("@ANEWARO");
@@ -384,21 +445,11 @@ namespace HelloWorld
 
         }
 
-        public static void UploadTweetMongoDB(TweetData data, int count)
+        public static BsonDocument UploadTweetMongoDB(TweetData data, int count, IMongoDatabase database)
         {
-            var lemmi = LemmasToDictionary(data.Sentimento);
+            //var lemmi = LemmasToDictionary(data.Sentimento);
             var sentimento = data.Sentimento;
             var tokens = data.Tokens;
-
-            string connectionString = "mongodb://localhost:27017";
-            MongoClient client = new MongoClient(connectionString);
-
-            string databaseName = "Twitter";
-            string collectionName = "Tweet";
-
-            IMongoDatabase database = client.GetDatabase(databaseName);
-
-            var collection = database.GetCollection<BsonDocument>(collectionName);
 
             Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
             Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
@@ -418,7 +469,6 @@ namespace HelloWorld
 
             foreach (var i in innerDictionaryEmoji)
             {
-                //sono sbagliati i conunters già quando arrivano qui, sono x2 solo per anger!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 for (var a = 0; a < i.Value; a++) //per aggiungere n volte un token nello stesso tweet
                 {
                     innerDocumentEmoji.Add(i.Key);
@@ -433,20 +483,33 @@ namespace HelloWorld
                 }
             }
 
+            Console.WriteLine("Elaborazione tokens finita" + DateTime.Now);
 
             var lex_res_collection = database.GetCollection<BsonDocument>("Lex_resources_words");
 
             var lems = new Dictionary<string, List<string>>();
 
             var words = new BsonArray();
+
             foreach (var outerKey in data.Lemmi)
             {
-                var word = new BsonDocument{
+                var word = new BsonDocument { };
+                if (count < 60)
+                {
+                    word = new BsonDocument{
 
-                {"lemma", outerKey},
-                {"pos", POS_word_tagger(outerKey)}
+                    {"lemma", outerKey},
+                    {"pos", POS_word_tagger(outerKey)}
+                        };
+                }
+                else
+                {
+                    word = new BsonDocument{
 
-                };
+                    {"lemma", outerKey}
+                    //{"pos", POS_word_tagger(outerKey)}  
+                        };
+                }
 
                 var filter = Builders<BsonDocument>.Filter.Eq("lemma", outerKey);
                 var filteredDoc = lex_res_collection.Find(filter).FirstOrDefault();
@@ -468,6 +531,7 @@ namespace HelloWorld
                 words.Add(word);
 
             }
+
             var document = new BsonDocument
                 {
                     { "id", sentimento.ToString() },
@@ -478,7 +542,8 @@ namespace HelloWorld
                     { "emoticon", innerDocumentEmoticon }
                 };
 
-            collection.InsertOne(document);
+            return document;
+
         }
 
         public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Emotions em)
@@ -540,7 +605,8 @@ namespace HelloWorld
                             string[] lineParts = line.Split('\t');
                             string parola = lineParts[0];
 
-                            double numero = double.Parse(lineParts[1], CultureInfo.GetCultureInfo("en-US")); if (!lemmaWithScore.ContainsKey(parola))
+                            double numero = double.Parse(lineParts[1], CultureInfo.GetCultureInfo("en-US"));
+                            if (!lemmaWithScore.ContainsKey(parola))
                             {
                                 lemmaWithScore[parola] = new Dictionary<string, double>();
                             }
@@ -720,7 +786,7 @@ namespace HelloWorld
                         if (tokeNLP.Contains(stop))
                         {
                             tokeNLP = tokeNLP.Replace(stop.ToString(), "");
-                       }
+                        }
                     }
 
                     tokensNLPList[i] = tokeNLP;
@@ -1025,32 +1091,142 @@ namespace HelloWorld
             image.Save("word_cloud.png");
         }
 
-        public static void generateFrequenciesFiles(List<BsonDocument> docs)
+        public static void generateWordsFrequenciesFiles(List<BsonDocument> docs)
         {
-            IList<string> words = new List<string> { };
-            IList<int> frequenze = new List<int> { };
+            List<string> words = new List<string>();
+            List<int> frequenze = new List<int>();
+
+            string[] commonWords = new string[]
+                {
+                    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+                    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
+                    "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
+                    "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
+                    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
+                    "when", "make", "can", "like", "time", "no", "just", "him", "know", "take",
+                    "people", "into", "year", "your", "good", "some", "could", "them", "see", "other",
+                    "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
+                    "back", "after", "use", "two", "how", "USERNAME","our", "work", "first", "well", "way", "is", "it's","im","i'm"
+                };
 
             foreach (var document in docs)
             {
                 string? word = document["_id"].ToString();
                 int count = document["totalCount"].AsInt32;
+
+                string lowercaseWord = word.ToLower();
+
+                if (!commonWords.Contains(lowercaseWord))
+                {
+                    words.Add(word);
+                    frequenze.Add(count);
+                }
+            }
+
+            // Sort the words and frequencies in descending order based on frequencies
+            var sortedData = words.Zip(frequenze, (w, f) => new { Word = w, Frequency = f })
+                                  .OrderByDescending(item => item.Frequency)
+                                  .Take(500)
+                                  .ToList();
+
+            string filePath = "Data_words.csv";
+
+            // Create the file CSV and write the data
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                foreach (var item in sortedData)
+                {
+                    string line = $"{item.Word};{item.Frequency};";
+                    writer.WriteLine(line);
+                }
+            }
+        }
+
+        public static void generateEmojiFrequenciesFiles(List<BsonDocument> docs)
+        {
+            List<string> words = new List<string>();
+            List<int> frequenze = new List<int>();
+
+            foreach (var document in docs)
+            {
+                string? word = document["_id"].ToString();
+                int count = document["totalCount"].AsInt32;
+
+                string lowercaseWord = word.ToLower();
+
+                words.Add(ConvertUnicodeToEmoji(word));
+                frequenze.Add(count);
+
+
+            }
+
+            // Sort the words and frequencies in descending order based on frequencies
+            var sortedData = words.Zip(frequenze, (w, f) => new { Word = w, Frequency = f })
+                                  .OrderByDescending(item => item.Frequency)
+                                  .Take(500)
+                                  .ToList();
+
+            string filePath = "Data_emoji.csv";
+
+            // Create the file CSV and write the data
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                foreach (var item in sortedData)
+                {
+                    string line = string.Format("{0},{1}", item.Frequency, item.Word);
+                    writer.WriteLine(line);
+                }
+            }
+        }
+
+        public static void generateEmoticonsFrequenciesFiles(List<BsonDocument> docs)
+        {
+            List<string> words = new List<string>();
+            List<int> frequenze = new List<int>();
+
+            foreach (var document in docs)
+            {
+                string? word = document["_id"].ToString();
+                int count = document["totalCount"].AsInt32;
+
+                string lowercaseWord = word.ToLower();
+
                 words.Add(word);
                 frequenze.Add(count);
 
-                string filePath = "dati.csv";
 
-                // Crea il file CSV e scrivi i dati
-                using (StreamWriter writer = new StreamWriter(filePath))
+            }
+
+            // Sort the words and frequencies in descending order based on frequencies
+            var sortedData = words.Zip(frequenze, (w, f) => new { Word = w, Frequency = f })
+                                  .OrderByDescending(item => item.Frequency)
+                                  .Take(500)
+                                  .ToList();
+
+            string filePath = "Data_emoti.csv";
+
+            // Create the file CSV and write the data
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                foreach (var item in sortedData)
                 {
-                    writer.WriteLine("weight,word"); // Scrive l'intestazione delle colonne
-
-                    for (int i = 0; i < words.Count; i++)
-                    {
-                        string line = string.Format("{0},{1}", frequenze[i], words[i]);
-                        writer.WriteLine(line);
-                    }
+                    string line = string.Format("{0},{1}", item.Frequency, item.Word);
+                    writer.WriteLine(line);
                 }
             }
+        }
+
+        public static string ConvertUnicodeToEmoji(string input)
+        {
+            string output = Regex.Replace(input, @"\\U([0-9A-Fa-f]{8})", match =>
+            {
+                string unicodeHex = match.Groups[1].Value;
+                int unicodeValue = int.Parse(unicodeHex, System.Globalization.NumberStyles.HexNumber);
+                string emoji = char.ConvertFromUtf32(unicodeValue);
+                return $"{emoji}";
+            });
+
+            return output;
         }
     }
 }

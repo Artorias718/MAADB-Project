@@ -42,15 +42,7 @@ namespace HelloWorld
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
                 int count = 1;
-                // TweetData Data = new TweetData(
-                //     LemmasToDictionary(em),
-                //     em.ToString(),
-                //     LemmasToDictionary(em),
-                //     CreateTokensDictionary(),
-                //     new Dictionary<string, int>()
-                // );
-
-                //Utils.StampaDizionario(lemmi);
+                //var lemmi = LemmasToDictionary(em);
                 //Utils.UploadPostgres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
 
@@ -59,17 +51,37 @@ namespace HelloWorld
 
                 List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
 
+                List<BsonDocument> documentsToInsert = new List<BsonDocument>();
+
+                string connectionString = "mongodb://localhost:27017";
+                MongoClient client = new MongoClient(connectionString);
+
+                string databaseName = "Twitter";
+                string collectionName = "Tweet";
+
+                IMongoDatabase database = client.GetDatabase(databaseName);
+
+                var collection = database.GetCollection<BsonDocument>(collectionName);
+
                 foreach (TweetData tweet in ProcessedTweets)
                 {
-                    UploadTweetMongoDB(tweet, count);
+                    BsonDocument d = UploadTweetMongoDB(tweet, count, database);
+                    documentsToInsert.Add(d);
+
                     count++;
+
                 }
 
-                // getHashtagFrequencies(em);
-                // getEmojiFrequencies(em);
-                // getEmoticonsFrequencies(em);
-                // getWordsFrequencies(em);
+                collection.InsertMany(documentsToInsert);
 
+                //UploadPostgres(lemmi, em.ToString());                    Console.WriteLine("\nDocumenti caricati" + count);
+
+
+
+                //getHashtagFrequencies(em);
+                //getEmojiFrequencies(em);
+                //getEmoticonsFrequencies(em);
+                //getWordsFrequencies(em);
 
 
                 //lemmiArray[em.ToString()] = Data.Lemmi;

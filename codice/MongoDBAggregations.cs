@@ -88,6 +88,8 @@ namespace HelloWorld
                 Console.WriteLine("Emoji " + emo + "   Count " + count + "\n");
 
             }
+            generateEmojiFrequenciesFiles(result);
+
 
 
         }
@@ -129,6 +131,9 @@ namespace HelloWorld
 
             }
 
+            generateEmoticonsFrequenciesFiles(result);
+
+
 
         }
         public static void getWordsFrequencies(Emotions em)
@@ -158,7 +163,7 @@ namespace HelloWorld
 
             var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
 
-            generateFrequenciesFiles(result);
+            generateWordsFrequenciesFiles(result);
 
             //generateWordCloud(words, frequenze);
             //Console.WriteLine("Word " + word + "   Count " + count + "\n");
@@ -166,7 +171,6 @@ namespace HelloWorld
         }
 
         //TODO 
-        //rimuovere punteggiatura
         //generare le words clouds e gli istogrammi di conseguenza
         //ricare tutto sul relazionale
         //calcoli percentuali per le statsistiche di uso delle risorse lessicali
