@@ -244,7 +244,6 @@ C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\System.Window
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\linux-x64\native\libikvm-native.so
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win-x64\native\ikvm-native.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win-x86\native\ikvm-native.dll
-C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\freebsd\lib\net6.0\System.Data.Odbc.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\illumos\lib\net6.0\System.Data.Odbc.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\ios\lib\net6.0\System.Data.Odbc.dll
@@ -253,8 +252,6 @@ C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\osx\
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\solaris\lib\net6.0\System.Data.Odbc.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\tvos\lib\net6.0\System.Data.Odbc.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Data.Odbc.dll
-C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net6.0\System.Threading.AccessControl.dll
@@ -550,3 +547,6 @@ C:\Users\harbi\Desktop\Latest MADDB project\obj\Debug\net7.0\ref\progetto C#.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\WordCloudSharp.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\harbi\Desktop\Latest MADDB project\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\WordCloudSharp.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\HP\OneDrive\Desktop\MAADB\progetto-MAADB\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll

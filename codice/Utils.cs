@@ -180,11 +180,19 @@ namespace HelloWorld
             string endPathWithScore = $"_tab.tsv";
 
             double? score = null;
-            string path = startPathConScore + nome_risorsa + endPathWithScore;
+            string path;
+
+            if(nome_risorsa.Equals("afinn"))
+            {
+                path = startPathConScore + nome_risorsa + ".txt";
+            }
+            else
+            {
+                path = startPathConScore + nome_risorsa + endPathWithScore;
+            }
 
             if (File.Exists(path))
             {
-
                 // Leggi tutti i lemmi presenti nella risorsa lessicale
                 using (StreamReader reader = new StreamReader(path))
                 {
@@ -205,25 +213,43 @@ namespace HelloWorld
             return score;
         }
 
-        public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
+        static bool checkTableExists(MySqlConnection connection, string tableName)
         {
-            MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
+            // Eseguire una query per verificare se la tabella esiste
+            using (MySqlCommand cmd = new MySqlCommand())
+            {
+                cmd.Connection = connection;
+                cmd.CommandType = System.Data.CommandType.Text;
+                
+                // Eseguire una query per verificare se la tabella esiste
+                cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables " + 
+                                    $"WHERE table_schema = '{connection.Database}' " + 
+                                    $"AND table_name = '{tableName}'";
+
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+                
+                return count > 0;
+            }
+        }
+
+        public static void createTablesPostgres()
+        {   
+            MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
 
             // Eseguire una query per verificare se la tabella esiste
-            cmd.CommandText = $"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{conn.Database}' AND table_name = 'tavoletta'";
+            //cmd.CommandText = $"SELECT COUNT(*) FROM information_schema.tables " + 
+                                //"WHERE table_schema = '{conn.Database}' " + 
+                                //"AND table_name = 'tavoletta'";
 
-            int tableCount = Convert.ToInt32(cmd.ExecuteScalar());
-
-            if (tableCount > 0)
-            {
+            //int tableCount = Convert.ToInt32(cmd.ExecuteScalar());
+            if(checkTableExists(conn, "tavoletta"))
                 Console.WriteLine($"La tabella 'tavoletta' esiste nel database '{conn.Database}'.");
-            }
             else
             {
-                Console.WriteLine($"La tabella 'tavoletta' non esiste nel database '{conn.Database}'.");
+                Console.WriteLine($"La tabella 'tavoletta' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE tavoletta (" +
                                   "`id` INT NOT NULL AUTO_INCREMENT, " +
@@ -241,7 +267,136 @@ namespace HelloWorld
 
                 cmd.ExecuteNonQuery();
             }
+                
+            if(checkTableExists(conn, "percentages"))
+                Console.WriteLine($"La tabella 'percentages' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'percentages' NON esiste nel database '{conn.Database}'.");
 
+                cmd.CommandText = "CREATE TABLE percentages (" +
+                                  "`sentiment` VARCHAR(50), " +
+                                  "`perc_presence_emo_sn` DOUBLE DEFAULT 0," +
+                                  "`perc_presence_sn_in_tokens` DOUBLE DEFAULT 0, " +
+                                  "`perc_presence_senti_sense` DOUBLE DEFAULT 0, " +
+                                  "`perc_presence_sense_tokens` DOUBLE DEFAULT 0, " +
+                                  "`perc_presence_nrc` DOUBLE DEFAULT 0, " +
+                                  "`perc_presence_nrc_tokens` DOUBLE DEFAULT 0" +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "common_words"))
+                Console.WriteLine($"La tabella 'common_words' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'common_words' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE common_words (" +
+                                  "`sentiment` VARCHAR(50), " +
+                                  "`shared_words_emo_sn` INT(11) DEFAULT 0," +
+                                  "`total_words_emo_sn` INT(11) DEFAULT 0, " +
+                                  "`shared_words_senti_sense` INT(11) DEFAULT 0, " +
+                                  "`total_words_senti_sense` INT(11) DEFAULT 0, " +
+                                  "`shared_words_nrc` INT(11) DEFAULT 0, " +
+                                  "`total_words_nrc` INT(11) DEFAULT 0," +
+                                  "`total_tokens` INT(11) DEFAULT 0" +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "sentiment"))
+                Console.WriteLine($"La tabella 'sentiment' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'sentiment' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE sentiment (" +
+                                  "`id` INT(11) primary key, " +
+                                  "`name` VARCHAR(30)" +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "lex_res_totals"))
+                Console.WriteLine($"La tabella 'lex_res_totals' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'lex_res_totals' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE lex_res_totals (" +
+                                  "`sentiment_id` INT(11) references sentiment(id), " +
+                                  "`emo_sn` DOUBLE DEFAULT 0, " +
+                                  "`senti_sense` DOUBLE DEFAULT 0, " +
+                                  "`nrc` DOUBLE DEFAULT 0 " +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "tweet"))
+                Console.WriteLine($"La tabella 'tweet' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'tweet' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE tweet (" +
+                                  "`id` INT(11) primary key, " +
+                                  "`text` VARCHAR(280), " +
+                                  "`sentiment_id` INT(11) references sentiment(id) " +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "token"))
+                Console.WriteLine($"La tabella 'token' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'token' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE token (" +
+                                  "`id` INT(11) primary key, " +
+                                  "`token` VARCHAR(300), " +
+                                  "`type` VARCHAR(20), " +
+                                  "`frequency` INT(11) DEFAULT 0, " +
+                                  "`sentiment_id` INT(11) references sentiment(id) " +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            if(checkTableExists(conn, "lex_res"))
+                Console.WriteLine($"La tabella 'lex_res' esiste nel database '{conn.Database}'.");
+            else
+            {
+                Console.WriteLine($"La tabella 'lex_res' NON esiste nel database '{conn.Database}'.");
+
+                cmd.CommandText = "CREATE TABLE lex_res (" +
+                                  "`id` INT(11) primary key, " +
+                                  "`text` VARCHAR(280), " +
+                                  "`emo_sn` INT(11) DEFAULT 0, " +
+                                  "`senti_sense` INT(11) DEFAULT 0, " +
+                                  "`nrc` INT(11) DEFAULT 0, " +
+                                  "`frequency` INT(11) DEFAULT 0, " +
+                                  "`sentiment_id` INT(11) references sentiment(id) " +
+                                  ");";
+                
+                cmd.ExecuteNonQuery();
+            }
+
+            conn.Close();
+        }
+
+        public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
+        {
+            MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = conn;
+            conn.Open();
 
             string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense, NRC, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS)" +
                                                 "VALUES (@lemma, @sentimento, @EmoSN, @SentiSense, @NRC, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS);";
@@ -252,8 +407,6 @@ namespace HelloWorld
 
             using (MySqlCommand command = new MySqlCommand(outerDictQuery, conn))
             {
-
-
                 foreach (string l in chiaviDizionarioEsterno)
                 {
                     command.Parameters.AddWithValue("@lemma", l);
@@ -263,10 +416,10 @@ namespace HelloWorld
                     command.Parameters.AddWithValue("@EmoSN", checkPresence(l, sentimento, "EmoSN"));
                     command.Parameters.AddWithValue("@SentiSense", checkPresence(l, sentimento, "SentiSense"));
                     command.Parameters.AddWithValue("@NRC", checkPresence(l, sentimento, "NRC"));
-                    command.Parameters.AddWithValue("@AFINN", null);
-                    command.Parameters.AddWithValue("@ANEWARO", getScore(l, "anewAro"));
-                    command.Parameters.AddWithValue("@ANEWDOM", getScore(l, "anewDom"));
-                    command.Parameters.AddWithValue("@ANEWPLEAS", null);
+                    command.Parameters.AddWithValue("@AFINN", getScore("afinn", sentimento));
+                    command.Parameters.AddWithValue("@ANEWARO", getScore("anewAro", sentimento));
+                    command.Parameters.AddWithValue("@ANEWDOM", getScore("anewDom", sentimento));
+                    command.Parameters.AddWithValue("@ANEWPLEAS", getScore("anewPleas", sentimento));
 
                     // foreach (KeyValuePair<string, double> innerPair in outerPair.Value)
                     // {
@@ -327,16 +480,25 @@ namespace HelloWorld
 
         public static void DeleteDatabase()
         {
-            MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=dibby");
+            MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
 
-            cmd.CommandText = "DROP TABLE inner_dict, outer_dict;";
+            cmd.CommandText = "drop table common_words;" +
+                                "drop table lex_res;" +
+                                "drop table lex_res_totals;" +
+                                "drop table percentages;" +
+                                "drop table sentiment;" +
+                                "drop table tavoletta;" +
+                                "drop table token;" +
+                                "drop table tweet;";
+
             cmd.ExecuteNonQuery();
 
             conn.Close();
 
+            Console.WriteLine("Eliminate tutte le tabelle.");
         }
 
         public static void UploadLexResourcesMongoDB(Emotions em)
@@ -678,6 +840,7 @@ namespace HelloWorld
                 }
 
             }
+
             return lemmi;
 
 

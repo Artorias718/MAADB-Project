@@ -43,6 +43,7 @@ namespace HelloWorld
             {
                 int count = 1;
                 //var lemmi = LemmasToDictionary(em);
+                //Utils.createTablesPostgres();
                 //Utils.UploadPostgres(lemmi, em.ToString());
                 //Utils.DeleteDatabase();
 
@@ -74,9 +75,8 @@ namespace HelloWorld
 
                 collection.InsertMany(documentsToInsert);
 
-                //UploadPostgres(lemmi, em.ToString());                    Console.WriteLine("\nDocumenti caricati" + count);
-
-
+                //UploadPostgres(lemmi, em.ToString());                   
+                //Console.WriteLine("\nDocumenti caricati" + count);
 
                 //getHashtagFrequencies(em);
                 //getEmojiFrequencies(em);
