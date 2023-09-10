@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using static HelloWorld.Utils;
@@ -33,6 +37,7 @@ namespace HelloWorld
             };
 
             // Esecuzione dell'aggregazione
+            // Esecuzione dell'aggregazione
             var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
 
             // Iterazione sui risultati
@@ -41,6 +46,7 @@ namespace HelloWorld
                 string? hashtag = document["_id"].ToString();
                 int count = document["totalCount"].AsInt32; ;
             }
+
         }
 
         public static void getEmojiFrequencies(Emotions em)
@@ -57,7 +63,6 @@ namespace HelloWorld
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-            // Definizione della pipeline di aggregazione
             var pipeline = new BsonDocument[]
             {
                 new BsonDocument("$match", new BsonDocument("id", em.ToString())),
@@ -69,8 +74,6 @@ namespace HelloWorld
                 })
             };
 
-            // Esecuzione dell'aggregazione
-            // Esecuzione dell'aggregazione
             var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
 
             // Iterazione sui risultati
@@ -78,11 +81,8 @@ namespace HelloWorld
             {
                 string? emo = document["_id"].ToString();
                 int count = document["totalCount"].AsInt32; ;
-                Console.WriteLine("Emoji " + emo + "   Count " + count + "\n");
-
             }
             generateEmojiFrequenciesFiles(result);
-
 
 
         }
@@ -125,7 +125,11 @@ namespace HelloWorld
             }
 
             generateEmoticonsFrequenciesFiles(result);
+
+
+
         }
+
         public static void getWordsFrequencies(Emotions em)
         {
             string connectionString = "mongodb://localhost:27017";
@@ -139,10 +143,9 @@ namespace HelloWorld
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-            // Definizione della pipeline di aggregazione
             var pipeline = new BsonDocument[]
             {
-                new BsonDocument("$match", new BsonDocument("id", em.ToString())),
+                new BsonDocument("$match", new BsonDocument("sentiment", em.ToString())),
                 new BsonDocument("$unwind", "$words"),
                 new BsonDocument("$group", new BsonDocument
                 {
@@ -157,9 +160,10 @@ namespace HelloWorld
 
             //generateWordCloud(words, frequenze);
             //Console.WriteLine("Word " + word + "   Count " + count + "\n");
+
         }
 
-        public static void getNumWordsTweet(Emotions em)
+        public static int getTweetTotalWords(Emotions em)
         {
             string connectionString = "mongodb://localhost:27017";
             MongoClient client = new MongoClient(connectionString);
@@ -167,113 +171,133 @@ namespace HelloWorld
             string databaseName = "Twitter";
             string collectionName = "Tweet";
 
-
             IMongoDatabase database = client.GetDatabase(databaseName);
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-            // Definizione della pipeline di aggregazione
-            var pipeline = new BsonArray
+            var pipeline = new List<BsonDocument>
+        {
+            BsonDocument.Parse("{ $match: { id: \"" + em.ToString() + "\" } }"),
+            BsonDocument.Parse("{ $group: { _id: \"$id\", totalWords: { $sum: { $size: \"$words\" } } } }"),
+            BsonDocument.Parse("{ $project: { _id: 0, id: \"$_id\", totalWords: 1 } }")
+        };
+
+            var results = collection.Aggregate<BsonDocument>(pipeline).FirstOrDefault();
+            return results.GetValue("totalWords").AsInt32; ;
+        }
+
+        public static int getSharedWordsCount(Emotions em, string reso)
+        {
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+            string res_name = reso + "_" + em.ToString();
+            //Console.WriteLine("********************" + res_name);
+
+            var pipeline = new BsonDocument[]
+        {
+            BsonDocument.Parse("{ $match: { id: \"" + em.ToString() + "\" } }"),
+            BsonDocument.Parse("{ $unwind: \"$words\" }"),
+            BsonDocument.Parse("{ $match: { \"words.lex_res_reference\": { $exists: true } } }"),
+            BsonDocument.Parse("{ $lookup: { from: \"Lex_resources_words\", localField: \"words.lex_res_reference\", foreignField: \"_id\", as: \"lexResourceWord\" } }"),
+            BsonDocument.Parse("{ $unwind: \"$lexResourceWord\" }"),
+            BsonDocument.Parse("{ $unwind: \"$lexResourceWord.Lex_reosurces\" }"),
+            BsonDocument.Parse("{ $group: { _id: \"$lexResourceWord.Lex_reosurces\", count: { $sum: 1 } } }"),
+            BsonDocument.Parse("{ $match: { _id: \"" + res_name + "\" } }") // Filtra per il nome della risorsa cercata
+        };
+
+            var results = collection.Aggregate<BsonDocument>(pipeline).FirstOrDefault();
+            //Console.WriteLine(results.GetValue("count").AsInt32);
+
+            return results.GetValue("count").AsInt32;
+        }
+
+        public static int getUniqueLemmasInTweets(Emotions em, string reso)
+        {
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+            string res_name = reso + "_" + em.ToString();
+            //Console.WriteLine("********************" + res_name);
+
+            var pipeline = new BsonDocument[]
+           {
+            new BsonDocument("$match", new BsonDocument("id", em.ToString())),
+            new BsonDocument("$unwind", "$words"),
+            new BsonDocument("$match", new BsonDocument("words.lex_res_reference", new BsonDocument("$exists", true))),
+             new BsonDocument("$lookup", new BsonDocument
+             {
+                 { "from", "Lex_resources_words" },
+                 { "localField", "words.lex_res_reference" },
+                 { "foreignField", "_id" },
+                 { "as", "lexResourceWord" }
+             }),
+            new BsonDocument("$unwind", "$lexResourceWord"),
+            new BsonDocument("$match", new BsonDocument("lexResourceWord.Lex_reosurces", res_name)),
+            new BsonDocument("$group", new BsonDocument
             {
-                new BsonDocument
-                (
-                    "$match", new BsonDocument("id", em.ToString())
-                ),
-                new BsonDocument
-                (
-                    "$match", 
-                    new BsonDocument
-                    (
-                        "words.lex_res_reference", new BsonDocument("$exists", true)
-                    )
-                ),
-                new BsonDocument
-                (
-                    "$project",
-                    new BsonDocument
-                    {
-                        { "_id", 1 }, 
-                        {
-                            "lexResReferenceCount", 
-                            new BsonDocument
-                            (
-                                "$size", 
-                                new BsonDocument
-                                (
-                                    "$filter", 
-                                    new BsonDocument
-                                    {
-                                        { "input", "$words" }, 
-                                        { "as", "word" }, 
-                                        {
-                                            "cond", 
-                                            new BsonDocument
-                                            (
-                                                "$ifNull", 
-                                                new BsonArray
-                                                    {
-                                                        "$$word.lex_res_reference",
-                                                        false
-                                                    }
-                                            ) 
-                                        }
-                                    }
-                                )
-                            )
-                        }
-                    }
-                ),
-                new BsonDocument
-                (
-                    "$group", 
-                    new BsonDocument
-                    {
-                        { "_id", BsonNull.Value }, 
-                        { 
-                            "totalLexResReferences", 
-                            new BsonDocument("$sum", "$lexResReferenceCount")
-                        }
-                    }
-                )
-            };
+                { "_id", BsonNull.Value },
+                { "totalLemmas", new BsonDocument("$sum", 1) },
+                { "uniqueLemmas", new BsonDocument("$addToSet", "$words.lemma") }
+            }),
+            new BsonDocument("$project", new BsonDocument
+            {
+                { "_id", 0 },
+                { "totalLemmas", 1 },
+                { "uniqueLemmasCount", new BsonDocument("$size", "$uniqueLemmas") }
+            })
+           };
+
+            var aggregateOptions = new AggregateOptions { AllowDiskUse = true };
+            var results = collection.Aggregate<BsonDocument>(pipeline, aggregateOptions).ToList().FirstOrDefault();
+
+            if (results != null)
+            {
+                return results.GetValue("uniqueLemmasCount").AsInt32;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public static int getLexResTotalElements(Emotions em, string reso)
+        {
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "LexResources";
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+            string res_name = reso + "_" + em.ToString();
+
+            var pipeline = new BsonDocument[]
+{
+            new BsonDocument("$match", new BsonDocument
+            {
+                { "_id", res_name }
+            })
+};
+
+            var aggregateOptions = new AggregateOptions { AllowDiskUse = true };
+            var results = collection.Aggregate<BsonDocument>(pipeline, aggregateOptions).FirstOrDefault();
+
+            return results.GetValue("num_words").AsInt32;
         }
     }
 }
-
-/*
-new BsonArray
-{
-    new BsonDocument("$match", 
-    new BsonDocument("id", "trust")),
-    new BsonDocument("$match", 
-    new BsonDocument("words.lex_res_reference", 
-    new BsonDocument("$exists", true))),
-    new BsonDocument("$project", 
-    new BsonDocument
-        {
-            { "_id", 1 }, 
-            { "lexResReferenceCount", 
-    new BsonDocument("$size", 
-    new BsonDocument("$filter", 
-    new BsonDocument
-                    {
-                        { "input", "$words" }, 
-                        { "as", "word" }, 
-                        { "cond", 
-    new BsonDocument("$ifNull", 
-    new BsonArray
-                            {
-                                "$$word.lex_res_reference",
-                                false
-                            }) }
-                    })) }
-        }),
-    new BsonDocument("$group", 
-    new BsonDocument
-        {
-            { "_id", BsonNull.Value }, 
-            { "totalLexResReferences", 
-    new BsonDocument("$sum", "$lexResReferenceCount") }
-        })
-}
-*/

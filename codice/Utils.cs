@@ -7,6 +7,10 @@ using opennlp.tools.postag;
 using WordCloudSharp;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using static HelloWorld.MongoDBAggregations;
+using System;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace HelloWorld
 {
@@ -1076,74 +1080,63 @@ namespace HelloWorld
 
         }
 
-/*
-        public static int CalcoloPercentuali(Resources res, Emotions em)
+
+        public static void CalcoloPercPresTwitter(Emotions em, object res)
         {
-            string startPath = $"Risorse lessicali/{em}/";
-            string endPath = $"_{em}.txt";
-            string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
-
-            int N_twitter_words = 0;
-            int N_lex_words = 0;
-            List<string> lemmiPresenti = new List<string>();
-
-            try
+            string reso = "";
+            if (res is Resources)
             {
-                string resString = res.ToString();
-                string pathLexRes = startPath + resString + endPath;
-
-                //Leggi tutti i lemmi presenti nella risorsa lessicale
-                using (StreamReader reader = new StreamReader(pathLexRes))
-                {
-                    string? lemma = reader.ReadLine();
-
-                    while ((lemma = reader.ReadLine()) != null)
-                    {
-                        //Rimuovi l'endline
-                        lemma = lemma.Replace("\n", "");
-                        N_lex_words++;
-
-                        //Rimuovi le parole composte
-                        if (!lemma.Contains("_"))
-                        {
-                            using (StreamReader readerTweet = new StreamReader(tweetPath))
-                            {
-                                string? rigaTweet;
-
-                                // Esegui le operazioni desiderate con ogni parola
-                                N_twitter_words++;
-
-                                while ((rigaTweet = readerTweet.ReadLine()) != null)
-                                {
-                                    //Dividi la riga in parole utilizzando lo spazio come separatore
-                                    string[] words = rigaTweet.Split(' ');
-
-                                    foreach (string word in words)
-                                    {
-                                        if (lemma == word && !lemmiPresenti.Contains(lemma))
-                                        {
-                                            lemmiPresenti.Add(lemma);
-                                            //fare che se il lemma compare aumenti di 1 ma poi non lo faccia pi+ per quel lemma
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        //lemma = reader.ReadLine();
-                    }
-                }
+                // Gestisci il caso in cui reso è di tipo Resources
+                Resources resource = (Resources)res;
+                // Effettua le operazioni specifiche per Resources
+                // Ad esempio, esegui un conteggio di parole con em e resource
+                reso = resource.ToString();
             }
-            catch (FileNotFoundException) { }
-            Console.WriteLine(N_twitter_words + ", " + N_lex_words);
+            else if (res is ResourcesWithScore)
+            {
+                // Gestisci il caso in cui reso è di un altro tipo diverso da Resources
+                ResourcesWithScore resource = (ResourcesWithScore)res;
+                // Effettua le operazioni specifiche per AltResourceType
+                // Ad esempio, esegui un conteggio di parole con em e altResource
+                reso = resource.ToString();
+            }
+            int N_twitter_words = getTweetTotalWords(em);
+            int N_shared_words = getSharedWordsCount(em, reso);
 
-            int N_shared_words = lemmiPresenti.Count;
 
-            int perc_presence_lex_res = N_shared_words / N_lex_words;
-            int perc_presence_twitter = N_shared_words / N_twitter_words;
+            double perc_presence_twitter = (double)N_shared_words / (double)N_twitter_words;
+            Console.WriteLine(Math.Round(perc_presence_twitter * 100, 2) + " %");
+            //return perc_presence_twitter;
 
-            return perc_presence_twitter*100;
         }
-*/
+
+        public static void CalcoloPercPresLexs(Emotions em, object res)
+        {
+            string reso = "";
+            if (res is Resources)
+            {
+                // Gestisci il caso in cui reso è di tipo Resources
+                Resources resource = (Resources)res;
+                // Effettua le operazioni specifiche per Resources
+                // Ad esempio, esegui un conteggio di parole con em e resource
+                reso = resource.ToString();
+            }
+            else if (res is ResourcesWithScore)
+            {
+                // Gestisci il caso in cui reso è di un altro tipo diverso da Resources
+                ResourcesWithScore resource = (ResourcesWithScore)res;
+                // Effettua le operazioni specifiche per AltResourceType
+                // Ad esempio, esegui un conteggio di parole con em e altResource
+                reso = resource.ToString();
+            }
+            int N_shared_words_unique = getUniqueLemmasInTweets(em, reso);
+            int N_lex_words = getLexResTotalElements(em, reso);
+
+
+            double perc_presence_lex = (double)N_shared_words_unique / (double)N_lex_words;
+
+            Console.WriteLine(Math.Round(perc_presence_lex * 100, 2) + " %");
+        }
 
         public static string[] POStagger(string text)
         {
@@ -1408,6 +1401,73 @@ namespace HelloWorld
             });
 
             return output;
+        }
+    
+        public static void TweetSerializer(List<TweetData> par)
+        {
+            // Specifica il percorso del tuo script Python
+            string pythonScriptPath = "codice\\script.py";
+
+            string json = JsonSerializer.Serialize(par);
+
+            string filePath = "input.json";
+
+            // Scrivere la stringa JSON in un file
+            File.WriteAllText(filePath, json);
+
+        }
+
+        public static List<TweetData> SerializingBack()
+        {
+            // Specifica il percorso del tuo script Python
+            string inputFilePath = "output.json"; // Sostituisci con il percorso del file JSON di output
+
+            // Leggi il JSON dal file di output
+            string jsonString = File.ReadAllText(inputFilePath);
+            var data = JsonSerializer.Deserialize<List<TweetData>>(jsonString);
+
+            return data;
+
+        }
+
+        public static void PrintTweetDataList(List<TweetData> tweetList)
+        {
+            foreach (var tweetData in tweetList)
+            {
+                Console.WriteLine("Lemmi:");
+                foreach (var lemma in tweetData.Lemmi)
+                {
+                    Console.WriteLine(lemma);
+                }
+                Console.WriteLine("Sentimento: " + tweetData.Sentimento);
+                Console.WriteLine("Tokens:");
+                foreach (var tokenType in tweetData.Tokens)
+                {
+                    Console.WriteLine(tokenType.Key + ":");
+                    foreach (var token in tokenType.Value)
+                    {
+                        Console.WriteLine($"{token.Key}: {token.Value}");
+                    }
+                }
+            }
+        }
+
+        public static void RunPythonScript(string pythonScriptPath)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = pythonScriptPath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            Process process = new Process { StartInfo = psi };
+
+            process.Start();
+
+            process.WaitForExit();
         }
     }
 }

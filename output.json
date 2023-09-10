@@ -1,0 +1,75 @@
+[
+    {
+        "Lemmi": [
+            "f",
+            "you",
+            "what's",
+            "that",
+            "spell",
+            "fired",
+            "up",
+            "noo",
+            "#fuckyou",
+            "haha"
+        ],
+        "Sentimento": 0,
+        "Tokens": {
+            "hashtag": {
+                "#fuckyou": 1
+            },
+            "emoticon": {},
+            "emoji": {}
+        }
+    },
+    {
+        "Lemmi": [
+            "now",
+            "all",
+            "of",
+            "you",
+            "roll",
+            "tide",
+            "bandwagon",
+            "fan",
+            "will",
+            "hop",
+            "off",
+            "alabama's",
+            "dick",
+            "one",
+            "wor",
+            "d",
+            "overrated"
+        ],
+        "Sentimento": 0,
+        "Tokens": {
+            "hashtag": {},
+            "emoticon": {},
+            "emoji": {}
+        }
+    },
+    {
+        "Lemmi": [
+            "this",
+            "weeken",
+            "d",
+            "tcu",
+            "football",
+            "next",
+            "weeken",
+            "d",
+            "marriage",
+            "@",
+            "amon",
+            "g",
+            "carter",
+            "stadium"
+        ],
+        "Sentimento": 0,
+        "Tokens": {
+            "hashtag": {},
+            "emoticon": {},
+            "emoji": {}
+        }
+    }
+]
