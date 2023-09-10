@@ -8,10 +8,6 @@ using WordCloudSharp;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
-
-
-
-
 namespace HelloWorld
 {
     public class Utils
@@ -146,7 +142,6 @@ namespace HelloWorld
             }
         }
 
-
         public static int checkPresence(string l, string em, string nome_risorsa)
         {
             string startPath = $"Risorse lessicali/{em}/";
@@ -238,13 +233,7 @@ namespace HelloWorld
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
-
-            // Eseguire una query per verificare se la tabella esiste
-            //cmd.CommandText = $"SELECT COUNT(*) FROM information_schema.tables " + 
-                                //"WHERE table_schema = '{conn.Database}' " + 
-                                //"AND table_name = 'tavoletta'";
-
-            //int tableCount = Convert.ToInt32(cmd.ExecuteScalar());
+/*
             if(checkTableExists(conn, "tavoletta"))
                 Console.WriteLine($"La tabella 'tavoletta' esiste nel database '{conn.Database}'.");
             else
@@ -267,7 +256,7 @@ namespace HelloWorld
 
                 cmd.ExecuteNonQuery();
             }
-                
+                */
             if(checkTableExists(conn, "percentages"))
                 Console.WriteLine($"La tabella 'percentages' esiste nel database '{conn.Database}'.");
             else
@@ -314,9 +303,9 @@ namespace HelloWorld
                 Console.WriteLine($"La tabella 'sentiment' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE sentiment (" +
-                                  "`id` INT(11) primary key, " +
+                                  "`id` INT(11) PRIMARY KEY AUTO_INCREMENT," +
                                   "`name` VARCHAR(30)" +
-                                  ");";
+                                  ") AUTO_INCREMENT=0;";
                 
                 cmd.ExecuteNonQuery();
             }
@@ -328,10 +317,11 @@ namespace HelloWorld
                 Console.WriteLine($"La tabella 'lex_res_totals' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE lex_res_totals (" +
-                                  "`sentiment_id` INT(11) references sentiment(id), " +
+                                  "`sentiment_id` INT(11), " +
                                   "`emo_sn` DOUBLE DEFAULT 0, " +
                                   "`senti_sense` DOUBLE DEFAULT 0, " +
-                                  "`nrc` DOUBLE DEFAULT 0 " +
+                                  "`nrc` DOUBLE DEFAULT 0, " +
+                                  "foreign key (`sentiment_id`) references sentiment(`id`) " +
                                   ");";
                 
                 cmd.ExecuteNonQuery();
@@ -344,10 +334,11 @@ namespace HelloWorld
                 Console.WriteLine($"La tabella 'tweet' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE tweet (" +
-                                  "`id` INT(11) primary key, " +
-                                  "`text` VARCHAR(280), " +
-                                  "`sentiment_id` INT(11) references sentiment(id) " +
-                                  ");";
+                                  "`id` INT(11) PRIMARY KEY AUTO_INCREMENT," +
+                                  "`text` VARCHAR(300)," +
+                                  "`sentiment_id` INT(11)," +
+                                  "foreign key (`sentiment_id`) references sentiment(`id`) " +
+                                  ") AUTO_INCREMENT=0;";
                 
                 cmd.ExecuteNonQuery();
             }
@@ -359,12 +350,13 @@ namespace HelloWorld
                 Console.WriteLine($"La tabella 'token' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE token (" +
-                                  "`id` INT(11) primary key, " +
-                                  "`token` VARCHAR(300), " +
-                                  "`type` VARCHAR(20), " +
-                                  "`frequency` INT(11) DEFAULT 0, " +
-                                  "`sentiment_id` INT(11) references sentiment(id) " +
-                                  ");";
+                                  "`id` INT(11) PRIMARY KEY AUTO_INCREMENT," +
+                                  "`token` VARCHAR(300)," +
+                                  "`type` VARCHAR(20)," +
+                                  "`frequency` INT(11) DEFAULT 0," +
+                                  "`sentiment_id` INT(11)," +
+                                  "foreign key (`sentiment_id`) references sentiment(`id`) " +
+                                  ") AUTO_INCREMENT=0;";
                 
                 cmd.ExecuteNonQuery();
             }
@@ -376,106 +368,154 @@ namespace HelloWorld
                 Console.WriteLine($"La tabella 'lex_res' NON esiste nel database '{conn.Database}'.");
 
                 cmd.CommandText = "CREATE TABLE lex_res (" +
-                                  "`id` INT(11) primary key, " +
-                                  "`text` VARCHAR(280), " +
-                                  "`emo_sn` INT(11) DEFAULT 0, " +
-                                  "`senti_sense` INT(11) DEFAULT 0, " +
-                                  "`nrc` INT(11) DEFAULT 0, " +
-                                  "`frequency` INT(11) DEFAULT 0, " +
-                                  "`sentiment_id` INT(11) references sentiment(id) " +
-                                  ");";
-                
+                                  "`id` INT(11) PRIMARY KEY AUTO_INCREMENT," +
+                                  "`lemma` VARCHAR(300)," +
+                                  "`emo_sn` INT(11) DEFAULT 0," +
+                                  "`senti_sense` INT(11) DEFAULT 0," +
+                                  "`nrc` INT(11) DEFAULT 0," +
+                                  "`sentiment_id` INT(11)," +
+                                  "foreign key (`sentiment_id`) references sentiment(`id`), " +
+                                  "`frequency` INT(11) DEFAULT 0," +
+                                  "`AFINN` DOUBLE, " +
+                                  "`ANEWARO` DOUBLE, " +
+                                  "`ANEWDOM` DOUBLE, " +
+                                  "`ANEWPLEAS` DOUBLE " +
+                                  ") AUTO_INCREMENT=0;";
                 cmd.ExecuteNonQuery();
             }
-
             conn.Close();
         }
 
-        public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento)
+        public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento, List<TweetData> ProcessedTweets)
         {
             MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
+            MySqlCommand command;
 
-            string outerDictQuery = "INSERT INTO tavoletta (lemma, sentimento, EmoSN, SentiSense, NRC, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS)" +
-                                                "VALUES (@lemma, @sentimento, @EmoSN, @SentiSense, @NRC, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS);";
+            string insertSentiment = "INSERT INTO sentiment (name) " +
+                                        "VALUES (@name)";
+            
+            command = new MySqlCommand(insertSentiment, conn);
+            command.Parameters.AddWithValue("@name", sentimento);
+            command.ExecuteNonQuery();
+            command.Parameters.RemoveAt("@name");
+
+            string insertLexRes = "INSERT INTO lex_res (lemma, emo_sn, senti_sense, nrc, sentiment_id, frequency, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS) " +
+                                        "SELECT @lemma, @emo_sn, @senti_sense, @nrc, s.id, @frequency, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS "+
+                                        "FROM sentiment s " +
+                                        "WHERE s.name = @name";
             //string innerDictQuery = "INSERT INTO tavoletta (risorsa, value, lemma_id) VALUES (@EmoSN, @SentiSense, @NRC, @AFINN, @ANEW, @Frquency);";
 
             string[] chiaviDizionarioEsterno = new string[lemmi.Keys.Count];
             lemmi.Keys.CopyTo(chiaviDizionarioEsterno, 0);
+            //command.ExecuteNonQuery();
 
-            using (MySqlCommand command = new MySqlCommand(outerDictQuery, conn))
+            using (command = new MySqlCommand(insertLexRes, conn))
             {
                 foreach (string l in chiaviDizionarioEsterno)
                 {
                     command.Parameters.AddWithValue("@lemma", l);
-                    command.Parameters.AddWithValue("@sentimento", sentimento);
 
                     // Aggiungi il valore di default 
-                    command.Parameters.AddWithValue("@EmoSN", checkPresence(l, sentimento, "EmoSN"));
-                    command.Parameters.AddWithValue("@SentiSense", checkPresence(l, sentimento, "SentiSense"));
-                    command.Parameters.AddWithValue("@NRC", checkPresence(l, sentimento, "NRC"));
-                    command.Parameters.AddWithValue("@AFINN", getScore("afinn", sentimento));
-                    command.Parameters.AddWithValue("@ANEWARO", getScore("anewAro", sentimento));
-                    command.Parameters.AddWithValue("@ANEWDOM", getScore("anewDom", sentimento));
-                    command.Parameters.AddWithValue("@ANEWPLEAS", getScore("anewPleas", sentimento));
+                    command.Parameters.AddWithValue("@frequency", 0);
+                    command.Parameters.AddWithValue("@emo_sn", checkPresence(l, sentimento, "EmoSN"));
+                    command.Parameters.AddWithValue("@senti_sense", checkPresence(l, sentimento, "SentiSense"));
+                    command.Parameters.AddWithValue("@nrc", checkPresence(l, sentimento, "NRC"));
+                    command.Parameters.AddWithValue("@AFINN", getScore(l, "afinn"));
+                    command.Parameters.AddWithValue("@ANEWARO", getScore(l, "anewAro"));
+                    command.Parameters.AddWithValue("@ANEWDOM", getScore(l, "anewDom"));
+                    command.Parameters.AddWithValue("@ANEWPLEAS", getScore(l, "anewPleas"));
 
-                    // foreach (KeyValuePair<string, double> innerPair in outerPair.Value)
-                    // {
-                    //     Resources resource;
-                    //     ResourcesWithScore resourceWithScore;
-
-                    //     if (Enum.TryParse(innerPair.Key, out resource))
-                    //     {
-                    //         switch (resource)
-                    //         {
-                    //             case Resources.EmoSN:
-                    //                 command.Parameters["@EmoSN"].Value = innerPair.Value;
-                    //                 break;
-                    //             case Resources.sentisense:
-                    //                 command.Parameters["@SentiSense"].Value = innerPair.Value;
-                    //                 break;
-                    //         }
-                    //     }
-
-                    //     if (Enum.TryParse(innerPair.Key, out resourceWithScore))
-                    //     {
-                    //         switch (resourceWithScore)
-                    //         {
-                    //             case ResourcesWithScore.afinn:
-                    //                 command.Parameters["@AFINN"].Value = innerPair.Value;
-                    //                 break;
-                    //             case ResourcesWithScore.anewAro:
-                    //                 command.Parameters["@ANEWARO"].Value = innerPair.Value;
-                    //                 break;
-                    //             case ResourcesWithScore.anewDom:
-                    //                 command.Parameters["@ANEWDOM"].Value = innerPair.Value;
-                    //                 break;
-                    //             case ResourcesWithScore.anewPleas:
-                    //                 command.Parameters["@ANEWPLEAS"].Value = innerPair.Value;
-                    //                 break;
-                    //         }
-                    //     }
-                    // }
+                    command.Parameters.AddWithValue("@name", sentimento);
 
                     command.ExecuteNonQuery();
 
                     command.Parameters.RemoveAt("@lemma");
-                    command.Parameters.RemoveAt("@sentimento");
-                    command.Parameters.RemoveAt("@EmoSN");
-                    command.Parameters.RemoveAt("@NRC");
-                    command.Parameters.RemoveAt("@SentiSense");
+                    command.Parameters.RemoveAt("@frequency");
+                    command.Parameters.RemoveAt("@emo_sn");
+                    command.Parameters.RemoveAt("@nrc");
+                    command.Parameters.RemoveAt("@senti_sense");
                     command.Parameters.RemoveAt("@AFINN");
                     command.Parameters.RemoveAt("@ANEWARO");
                     command.Parameters.RemoveAt("@ANEWDOM");
                     command.Parameters.RemoveAt("@ANEWPLEAS");
-
-
+                    command.Parameters.RemoveAt("@name");
                 }
-                conn.Close();
-
             }
+
+            string insertLexResTot = "INSERT INTO lex_res_totals (sentiment_id, emo_sn, senti_sense, nrc) " +
+                                        "SELECT s.id, @emo_sn, @senti_sense, @nrc "+
+                                        "FROM sentiment s " +
+                                        "WHERE s.name = @name";
+
+            string startPath = $"Risorse lessicali/{sentimento}/";
+            string endPath = $"_{sentimento}.txt";
+
+            command = new MySqlCommand(insertLexResTot, conn);
+
+            command.Parameters.AddWithValue("@emo_sn", File.Exists(startPath + "EmoSN" + endPath) ? File.ReadAllLines(startPath + "EmoSN" + endPath).Length : 0);
+            command.Parameters.AddWithValue("@senti_sense", File.Exists(startPath + "SentiSense" + endPath) ? File.ReadAllLines(startPath + "SentiSense" + endPath).Length : 0);
+            command.Parameters.AddWithValue("@nrc", File.Exists(startPath + "NRC" + endPath) ? File.ReadAllLines(startPath + "NRC" + endPath).Length : 0);
+            command.Parameters.AddWithValue("@name", sentimento);
+
+            command.ExecuteNonQuery();
+
+            command.Parameters.RemoveAt("@emo_sn");
+            command.Parameters.RemoveAt("@nrc");
+            command.Parameters.RemoveAt("@senti_sense");
+            command.Parameters.RemoveAt("@name");
+
+            string insertTweet = "INSERT INTO tweet (text, sentiment_id) " +
+                                        "SELECT @text, s.id "+
+                                        "FROM sentiment s " +
+                                        "WHERE s.name = @name";
+
+            command = new MySqlCommand(insertTweet, conn);
+
+            string insertToken = "INSERT INTO token (token, type, frequency, sentiment_id) " +
+                                        "SELECT @token, @type, @frequency, s.id "+
+                                        "FROM sentiment s " +
+                                        "WHERE s.name = @name";
+
+            MySqlCommand command1 = new MySqlCommand(insertToken, conn);
+
+            string tweetComplete = "";
+
+            foreach (TweetData tweet in ProcessedTweets)
+            {
+                foreach (string lemma in tweet.Lemmi)
+                    tweetComplete = string.Concat(tweetComplete, " ", lemma);
+                
+                command.Parameters.AddWithValue("@text", tweetComplete);
+                command.Parameters.AddWithValue("@name", sentimento);
+
+                command.ExecuteNonQuery();
+
+                command.Parameters.RemoveAt("@text");
+                command.Parameters.RemoveAt("@name");
+
+                tweetComplete = "";
+
+                foreach (Tokens tok in tweet.Tokens.Keys)
+                    foreach (string lemma in tweet.Tokens[tok].Keys)
+                    {
+                        command1.Parameters.AddWithValue("@token", lemma);
+                        command1.Parameters.AddWithValue("@type", Enum.GetName(typeof(Tokens), tok));
+                        command1.Parameters.AddWithValue("@frequency", tweet.Tokens[tok][lemma]);
+                        command1.Parameters.AddWithValue("@name", sentimento);
+
+                        command1.ExecuteNonQuery();
+
+                        command1.Parameters.RemoveAt("@token");
+                        command1.Parameters.RemoveAt("@type");
+                        command1.Parameters.RemoveAt("@frequency");
+                        command1.Parameters.RemoveAt("@name");
+                    }
+            }
+
+            conn.Close();
         }
 
         public static void DeleteDatabase()
@@ -489,10 +529,9 @@ namespace HelloWorld
                                 "drop table lex_res;" +
                                 "drop table lex_res_totals;" +
                                 "drop table percentages;" +
-                                "drop table sentiment;" +
-                                "drop table tavoletta;" +
                                 "drop table token;" +
-                                "drop table tweet;";
+                                "drop table tweet;" + 
+                                "drop table sentiment;";
 
             cmd.ExecuteNonQuery();
 
@@ -518,13 +557,11 @@ namespace HelloWorld
 
             var collection = database.GetCollection<BsonDocument>(collectionName);
 
-
             foreach (Resources res in Resources.GetValues(typeof(Resources)))
             {
                 if (res == Resources.nuova_risorsa)
                 {
                     continue;
-
                 }
 
                 try
@@ -550,7 +587,6 @@ namespace HelloWorld
                 {
                     continue;
                 }
-
             }
         }
 
@@ -705,27 +741,18 @@ namespace HelloWorld
                 };
 
             return document;
-
         }
 
         public static Dictionary<string, Dictionary<string, double>> LemmasToDictionary(Emotions em)
         {
-
             Dictionary<string, Dictionary<string, double>> lemmi = new Dictionary<string, Dictionary<string, double>>(); // Creazione di un nuovo dizionario per ogni iterazione
             Dictionary<string, Dictionary<string, double>> lemmaWithScore = new Dictionary<string, Dictionary<string, double>>();
-
-            //TODO
-            //Qui assegna tutti gli score all'etichetta "afinn" manulamente, per avere anche quella devo trasformare lemmawithScore in un 
-            // Dictionary<string, Dictionary<string, int>>
-            // <lemma<risorsa:score>>
 
             //Console.WriteLine(em);
             string startPath = $"Risorse lessicali/{em}/";
             string endPath = $"_{em}.txt";
             string startPathConScore = $"Risorse lessicali/ConScore/";
             string endPathWithScore = $"_tab.tsv";
-
-
 
             //popola lemmaWithscore con le risorse lessicali con lo score in afinn.txt
             using (StreamReader reader = new StreamReader(startPathConScore + "afinn.txt"))
@@ -741,16 +768,15 @@ namespace HelloWorld
                         lemmaWithScore[parola] = new Dictionary<string, double>();
                     }
                     lemmaWithScore[parola]["afinn"] = numero;
-
                 }
             }
+
             //popola lemmaWithscore con le risorse lessicali con lo score negli altri 3 files
             foreach (ResourcesWithScore res in ResourcesWithScore.GetValues(typeof(ResourcesWithScore)))
             {
                 if (res == ResourcesWithScore.nuova_risorsa)
                 {
                     continue;
-
                 }
 
                 try
@@ -781,7 +807,6 @@ namespace HelloWorld
                 {
                     continue;
                 }
-
             }
 
             //popola il dizionario del lemma sia con parole delle risorse normali che con parole delle risorse con score
@@ -790,7 +815,6 @@ namespace HelloWorld
                 if (res == Resources.nuova_risorsa)
                 {
                     continue;
-
                 }
 
                 try
@@ -799,12 +823,10 @@ namespace HelloWorld
                     string path = startPath + resString + endPath;
                     string filename = resString + $"_{em}";
 
-
                     // Leggi tutti i lemmi presenti nella risorsa lessicale
                     using (StreamReader reader = new StreamReader(path))
                     {
                         string? lemma = reader.ReadLine();
-
 
                         while (lemma != null)
                         {
@@ -826,11 +848,9 @@ namespace HelloWorld
                                         l[dict.Key] = dict.Value;
                                         lemmi[lemma] = l;
                                     }
-
                                 }
                             }
                             lemma = reader.ReadLine();
-
                         }
                     }
                 }
@@ -838,30 +858,32 @@ namespace HelloWorld
                 {
                     continue;
                 }
-
             }
 
             return lemmi;
-
-
-
         }
 
-        public static List<TweetData> TweetProcessing(Emotions em, Dictionary<string, string> splittedSlagWords, string[] splittedEmoticons, string[] splittedEmoji)
+        public static List<TweetData> TweetProcessing(Emotions em, 
+                                                    Dictionary<string, string> splittedSlagWords, 
+                                                    string[] splittedEmoticons,
+                                                    string[] splittedEmoji)
         {
             List<TweetData> Tweets = new List<TweetData>();
-            string tweetPath = $"Twitter messaggi/dataset_dt_{em.ToString()}_60k.txt";
+            string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
             //string tweetPath = "Twitter messaggi/test.txt";
             foreach (string line in File.ReadLines(tweetPath))
             {
                 TweetData Data = new TweetData(
-                em,
-                CreateTokensDictionary()
-                );
+                                            em,
+                                            CreateTokensDictionary()
+                                            );
 
                 var tokens = Data.Tokens;
 
                 string stopwordsText = "[,?!.;:/()& _+=<>\"]";
+
+                string[] negWords = new string[] {"not", "rather", "hardly", "couldn\'t", "wasn\'t", "didn\'t", "wouldn\'t", "shouldn\'t",
+                                                    "weren\'t", "don\'t", "doesn\'t", "haven\'t", "hasn\'t", "won\'t", "wont", "hadn\'t"};
 
                 char[] stopwords = stopwordsText.ToCharArray();
 
@@ -872,10 +894,11 @@ namespace HelloWorld
                 List<string> tokensNLPList = new List<string>(tokensNLP);
 
                 //rimozione username e url
-                tokensNLPList.Remove("USERNAME");
-                tokensNLPList.Remove("URL");
+                tokensNLPList.RemoveAll(item => item == "USERNAME" || item == "URL");
 
-
+                //rimozione parole che negano
+                tokensNLPList.RemoveAll(negWords.Contains);
+                
                 //sostituzione slag words
                 foreach (var kv in splittedSlagWords)
                 {
@@ -890,7 +913,6 @@ namespace HelloWorld
                         }
                     }
                 }
-
 
                 //popolamento dizionario dei tokens
                 foreach (string tokeNLP in tokensNLPList)
@@ -956,7 +978,6 @@ namespace HelloWorld
                 }
                 tokensNLPList.RemoveAll(string.IsNullOrEmpty);
 
-
                 for (int i = 0; i < tokensNLPList.Count; i++)
                 {
                     string tokeNLP = tokensNLPList[i];
@@ -965,7 +986,6 @@ namespace HelloWorld
                     {
                         if (StringToUTF32(tokeNLP).Contains(emo))
                         {
-
                             tokensNLPList[i] = "";
                         }
                     }
@@ -1056,46 +1076,50 @@ namespace HelloWorld
 
         }
 
+/*
         public static int CalcoloPercentuali(Resources res, Emotions em)
         {
             string startPath = $"Risorse lessicali/{em}/";
             string endPath = $"_{em}.txt";
-            string tweetPath = $"Twitter messaggi/dataset_dt_anger_60k.txt";
+            string tweetPath = $"Twitter messaggi/dataset_dt_{em}_60k.txt";
 
             int N_twitter_words = 0;
             int N_lex_words = 0;
             List<string> lemmiPresenti = new List<string>();
-            int N_shared_words = 0;
 
             try
             {
                 string resString = res.ToString();
-                string path = startPath + resString + endPath;
+                string pathLexRes = startPath + resString + endPath;
 
-                // Leggi tutti i lemmi presenti nella risorsa lessicale
-                using (StreamReader reader = new StreamReader(path))
+                //Leggi tutti i lemmi presenti nella risorsa lessicale
+                using (StreamReader reader = new StreamReader(pathLexRes))
                 {
                     string? lemma = reader.ReadLine();
 
-                    while (lemma != null)
+                    while ((lemma = reader.ReadLine()) != null)
                     {
-                        // Rimuovi l'endline
+                        //Rimuovi l'endline
                         lemma = lemma.Replace("\n", "");
                         N_lex_words++;
-                        // Rimuovi le parole composte
+
+                        //Rimuovi le parole composte
                         if (!lemma.Contains("_"))
                         {
                             using (StreamReader readerTweet = new StreamReader(tweetPath))
                             {
                                 string? rigaTweet;
+
+                                // Esegui le operazioni desiderate con ogni parola
+                                N_twitter_words++;
+
                                 while ((rigaTweet = readerTweet.ReadLine()) != null)
                                 {
-                                    string[] words = rigaTweet.Split(' '); // Dividi la riga in parole utilizzando lo spazio come separatore
+                                    //Dividi la riga in parole utilizzando lo spazio come separatore
+                                    string[] words = rigaTweet.Split(' ');
 
                                     foreach (string word in words)
                                     {
-                                        // Esegui le operazioni desiderate con ogni parola
-                                        N_twitter_words++;
                                         if (lemma == word && !lemmiPresenti.Contains(lemma))
                                         {
                                             lemmiPresenti.Add(lemma);
@@ -1105,22 +1129,21 @@ namespace HelloWorld
                                 }
                             }
                         }
-                        lemma = reader.ReadLine();
-
+                        //lemma = reader.ReadLine();
                     }
                 }
             }
             catch (FileNotFoundException) { }
+            Console.WriteLine(N_twitter_words + ", " + N_lex_words);
 
-            N_shared_words = lemmiPresenti.Count;
+            int N_shared_words = lemmiPresenti.Count;
 
             int perc_presence_lex_res = N_shared_words / N_lex_words;
             int perc_presence_twitter = N_shared_words / N_twitter_words;
 
-            return perc_presence_lex_res;
-
-
+            return perc_presence_twitter*100;
         }
+*/
 
         public static string[] POStagger(string text)
         {
@@ -1171,8 +1194,6 @@ namespace HelloWorld
             Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
             string[] tokens2 = tokenizer.tokenize(word);
 
-
-
             // Esegui il POS tagging sui token
             string[] tags = posTagger.tag(tokens2);
 
@@ -1194,7 +1215,6 @@ namespace HelloWorld
 
             // Tokenizzazione del testo
             Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
-
 
             // Esegui il POS tagging sui token
             string[] tags = posTagger.tag(tokensNLP);
@@ -1237,11 +1257,11 @@ namespace HelloWorld
         public static Dictionary<Tokens, Dictionary<string, int>> CreateTokensDictionary()
         {
             return new Dictionary<Tokens, Dictionary<string, int>>
-    {
-        { Tokens.hashtag, new Dictionary<string, int>() },
-        { Tokens.emoticon, new Dictionary<string, int>() },
-        { Tokens.emoji, new Dictionary<string, int>() }
-    };
+                    {
+                        { Tokens.hashtag, new Dictionary<string, int>() },
+                        { Tokens.emoticon, new Dictionary<string, int>() },
+                        { Tokens.emoji, new Dictionary<string, int>() }
+                    };
         }
 
         public static void generateWordCloud(IList<string> words, IList<int> frequenze)
@@ -1319,8 +1339,6 @@ namespace HelloWorld
 
                 words.Add(ConvertUnicodeToEmoji(word));
                 frequenze.Add(count);
-
-
             }
 
             // Sort the words and frequencies in descending order based on frequencies

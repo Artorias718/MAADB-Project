@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using static HelloWorld.Utils;
-
 
 namespace HelloWorld
 {
@@ -38,7 +33,6 @@ namespace HelloWorld
             };
 
             // Esecuzione dell'aggregazione
-            // Esecuzione dell'aggregazione
             var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
 
             // Iterazione sui risultati
@@ -47,7 +41,6 @@ namespace HelloWorld
                 string? hashtag = document["_id"].ToString();
                 int count = document["totalCount"].AsInt32; ;
             }
-
         }
 
         public static void getEmojiFrequencies(Emotions em)
@@ -132,9 +125,6 @@ namespace HelloWorld
             }
 
             generateEmoticonsFrequenciesFiles(result);
-
-
-
         }
         public static void getWordsFrequencies(Emotions em)
         {
@@ -167,14 +157,123 @@ namespace HelloWorld
 
             //generateWordCloud(words, frequenze);
             //Console.WriteLine("Word " + word + "   Count " + count + "\n");
-
         }
 
-        //TODO 
-        //generare le words clouds e gli istogrammi di conseguenza
-        //ricare tutto sul relazionale
-        //calcoli percentuali per le statsistiche di uso delle risorse lessicali
-        //predisporre la creazione delle nuove risorse
-        //presentazione
+        public static void getNumWordsTweet(Emotions em)
+        {
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+
+            // Definizione della pipeline di aggregazione
+            var pipeline = new BsonArray
+            {
+                new BsonDocument
+                (
+                    "$match", new BsonDocument("id", em.ToString())
+                ),
+                new BsonDocument
+                (
+                    "$match", 
+                    new BsonDocument
+                    (
+                        "words.lex_res_reference", new BsonDocument("$exists", true)
+                    )
+                ),
+                new BsonDocument
+                (
+                    "$project",
+                    new BsonDocument
+                    {
+                        { "_id", 1 }, 
+                        {
+                            "lexResReferenceCount", 
+                            new BsonDocument
+                            (
+                                "$size", 
+                                new BsonDocument
+                                (
+                                    "$filter", 
+                                    new BsonDocument
+                                    {
+                                        { "input", "$words" }, 
+                                        { "as", "word" }, 
+                                        {
+                                            "cond", 
+                                            new BsonDocument
+                                            (
+                                                "$ifNull", 
+                                                new BsonArray
+                                                    {
+                                                        "$$word.lex_res_reference",
+                                                        false
+                                                    }
+                                            ) 
+                                        }
+                                    }
+                                )
+                            )
+                        }
+                    }
+                ),
+                new BsonDocument
+                (
+                    "$group", 
+                    new BsonDocument
+                    {
+                        { "_id", BsonNull.Value }, 
+                        { 
+                            "totalLexResReferences", 
+                            new BsonDocument("$sum", "$lexResReferenceCount")
+                        }
+                    }
+                )
+            };
+        }
     }
 }
+
+/*
+new BsonArray
+{
+    new BsonDocument("$match", 
+    new BsonDocument("id", "trust")),
+    new BsonDocument("$match", 
+    new BsonDocument("words.lex_res_reference", 
+    new BsonDocument("$exists", true))),
+    new BsonDocument("$project", 
+    new BsonDocument
+        {
+            { "_id", 1 }, 
+            { "lexResReferenceCount", 
+    new BsonDocument("$size", 
+    new BsonDocument("$filter", 
+    new BsonDocument
+                    {
+                        { "input", "$words" }, 
+                        { "as", "word" }, 
+                        { "cond", 
+    new BsonDocument("$ifNull", 
+    new BsonArray
+                            {
+                                "$$word.lex_res_reference",
+                                false
+                            }) }
+                    })) }
+        }),
+    new BsonDocument("$group", 
+    new BsonDocument
+        {
+            { "_id", BsonNull.Value }, 
+            { "totalLexResReferences", 
+    new BsonDocument("$sum", "$lexResReferenceCount") }
+        })
+}
+*/

@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic.CompilerServices;
 using System.IO;
 using MongoDB.Driver;
 using MongoDB.Bson;
@@ -37,20 +38,22 @@ namespace HelloWorld
             Dictionary<Emotions, Dictionary<string, int>> lemmaFrequencies = new Dictionary<Emotions, Dictionary<string, int>>();
             Dictionary<string, string> postags = new Dictionary<string, string>();
 
-
             //Emotions em = Emotions.anger;
             foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
             {
+                List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
                 int count = 1;
-                //var lemmi = LemmasToDictionary(em);
-                //Utils.createTablesPostgres();
-                //Utils.UploadPostgres(lemmi, em.ToString());
+                var lemmi = LemmasToDictionary(em);
+
+                Utils.createTablesPostgres();
+                Utils.UploadPostgres(lemmi, em.ToString(), ProcessedTweets);
+
                 //Utils.DeleteDatabase();
 
-                UploadLexResourcesMongoDB(em);
-                UploadLexResourcesWordsMongoDB(em);
-
-                List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
+                //UploadLexResourcesMongoDB(em);
+                //UploadLexResourcesWordsMongoDB(em);
+/*
+                
 
                 List<BsonDocument> documentsToInsert = new List<BsonDocument>();
 
@@ -70,11 +73,10 @@ namespace HelloWorld
                     documentsToInsert.Add(d);
 
                     count++;
-
                 }
 
                 collection.InsertMany(documentsToInsert);
-
+*/
                 //UploadPostgres(lemmi, em.ToString());                   
                 //Console.WriteLine("\nDocumenti caricati" + count);
 
@@ -87,7 +89,6 @@ namespace HelloWorld
                 //lemmiArray[em.ToString()] = Data.Lemmi;
                 //tokensArray[em] = Data.Tokens;
             }
-
         }
     }
 }

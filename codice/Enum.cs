@@ -1,13 +1,13 @@
 public enum Emotions
 {
-    //anger,
+    anger
     //anticipation,
     //disgust,
     //fear,
     //joy,
     //surprise,
     //sadness,
-    trust
+    //trust
 }
 
 public enum Resources
