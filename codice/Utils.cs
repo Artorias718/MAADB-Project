@@ -181,7 +181,7 @@ namespace HelloWorld
             double? score = null;
             string path;
 
-            if(nome_risorsa.Equals("afinn"))
+            if (nome_risorsa.Equals("afinn"))
             {
                 path = startPathConScore + nome_risorsa + ".txt";
             }
@@ -219,49 +219,52 @@ namespace HelloWorld
             {
                 cmd.Connection = connection;
                 cmd.CommandType = System.Data.CommandType.Text;
-                
+
                 // Eseguire una query per verificare se la tabella esiste
-                cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables " + 
-                                    $"WHERE table_schema = '{connection.Database}' " + 
+                cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables " +
+                                    $"WHERE table_schema = '{connection.Database}' " +
                                     $"AND table_name = '{tableName}'";
 
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
-                
+
                 return count > 0;
             }
         }
 
         public static void createTablesPostgres()
-        {   
-            MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+        {
+            //MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+            MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=world");
+
+
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
-/*
-            if(checkTableExists(conn, "tavoletta"))
-                Console.WriteLine($"La tabella 'tavoletta' esiste nel database '{conn.Database}'.");
-            else
-            {
-                Console.WriteLine($"La tabella 'tavoletta' NON esiste nel database '{conn.Database}'.");
+            /*
+                        if(checkTableExists(conn, "tavoletta"))
+                            Console.WriteLine($"La tabella 'tavoletta' esiste nel database '{conn.Database}'.");
+                        else
+                        {
+                            Console.WriteLine($"La tabella 'tavoletta' NON esiste nel database '{conn.Database}'.");
 
-                cmd.CommandText = "CREATE TABLE tavoletta (" +
-                                  "`id` INT NOT NULL AUTO_INCREMENT, " +
-                                  "`lemma` VARCHAR(255) NOT NULL, " +
-                                  "`sentimento` VARCHAR(255), " +
-                                  "`EmoSN` DOUBLE DEFAULT 0, " +
-                                  "`SentiSense` DOUBLE DEFAULT 0, " +
-                                  "`NRC` DOUBLE DEFAULT 0, " +
-                                  "`AFINN` DOUBLE, " +
-                                  "`ANEWARO` DOUBLE, " +
-                                  "`ANEWDOM` DOUBLE, " +
-                                  "`ANEWPLEAS` DOUBLE, " +
-                                  "PRIMARY KEY (`id`)" +
-                                  ");";
+                            cmd.CommandText = "CREATE TABLE tavoletta (" +
+                                              "`id` INT NOT NULL AUTO_INCREMENT, " +
+                                              "`lemma` VARCHAR(255) NOT NULL, " +
+                                              "`sentimento` VARCHAR(255), " +
+                                              "`EmoSN` DOUBLE DEFAULT 0, " +
+                                              "`SentiSense` DOUBLE DEFAULT 0, " +
+                                              "`NRC` DOUBLE DEFAULT 0, " +
+                                              "`AFINN` DOUBLE, " +
+                                              "`ANEWARO` DOUBLE, " +
+                                              "`ANEWDOM` DOUBLE, " +
+                                              "`ANEWPLEAS` DOUBLE, " +
+                                              "PRIMARY KEY (`id`)" +
+                                              ");";
 
-                cmd.ExecuteNonQuery();
-            }
-                */
-            if(checkTableExists(conn, "percentages"))
+                            cmd.ExecuteNonQuery();
+                        }
+                            */
+            if (checkTableExists(conn, "percentages"))
                 Console.WriteLine($"La tabella 'percentages' esiste nel database '{conn.Database}'.");
             else
             {
@@ -276,31 +279,11 @@ namespace HelloWorld
                                   "`perc_presence_nrc` DOUBLE DEFAULT 0, " +
                                   "`perc_presence_nrc_tokens` DOUBLE DEFAULT 0" +
                                   ");";
-                
+
                 cmd.ExecuteNonQuery();
             }
 
-            if(checkTableExists(conn, "common_words"))
-                Console.WriteLine($"La tabella 'common_words' esiste nel database '{conn.Database}'.");
-            else
-            {
-                Console.WriteLine($"La tabella 'common_words' NON esiste nel database '{conn.Database}'.");
-
-                cmd.CommandText = "CREATE TABLE common_words (" +
-                                  "`sentiment` VARCHAR(50), " +
-                                  "`shared_words_emo_sn` INT(11) DEFAULT 0," +
-                                  "`total_words_emo_sn` INT(11) DEFAULT 0, " +
-                                  "`shared_words_senti_sense` INT(11) DEFAULT 0, " +
-                                  "`total_words_senti_sense` INT(11) DEFAULT 0, " +
-                                  "`shared_words_nrc` INT(11) DEFAULT 0, " +
-                                  "`total_words_nrc` INT(11) DEFAULT 0," +
-                                  "`total_tokens` INT(11) DEFAULT 0" +
-                                  ");";
-                
-                cmd.ExecuteNonQuery();
-            }
-
-            if(checkTableExists(conn, "sentiment"))
+            if (checkTableExists(conn, "sentiment"))
                 Console.WriteLine($"La tabella 'sentiment' esiste nel database '{conn.Database}'.");
             else
             {
@@ -310,11 +293,11 @@ namespace HelloWorld
                                   "`id` INT(11) PRIMARY KEY AUTO_INCREMENT," +
                                   "`name` VARCHAR(30)" +
                                   ") AUTO_INCREMENT=0;";
-                
+
                 cmd.ExecuteNonQuery();
             }
 
-            if(checkTableExists(conn, "lex_res_totals"))
+            if (checkTableExists(conn, "lex_res_totals"))
                 Console.WriteLine($"La tabella 'lex_res_totals' esiste nel database '{conn.Database}'.");
             else
             {
@@ -327,11 +310,12 @@ namespace HelloWorld
                                   "`nrc` DOUBLE DEFAULT 0, " +
                                   "foreign key (`sentiment_id`) references sentiment(`id`) " +
                                   ");";
-                
+
+
                 cmd.ExecuteNonQuery();
             }
 
-            if(checkTableExists(conn, "tweet"))
+            if (checkTableExists(conn, "tweet"))
                 Console.WriteLine($"La tabella 'tweet' esiste nel database '{conn.Database}'.");
             else
             {
@@ -343,11 +327,11 @@ namespace HelloWorld
                                   "`sentiment_id` INT(11)," +
                                   "foreign key (`sentiment_id`) references sentiment(`id`) " +
                                   ") AUTO_INCREMENT=0;";
-                
+
                 cmd.ExecuteNonQuery();
             }
 
-            if(checkTableExists(conn, "token"))
+            if (checkTableExists(conn, "token"))
                 Console.WriteLine($"La tabella 'token' esiste nel database '{conn.Database}'.");
             else
             {
@@ -361,11 +345,11 @@ namespace HelloWorld
                                   "`sentiment_id` INT(11)," +
                                   "foreign key (`sentiment_id`) references sentiment(`id`) " +
                                   ") AUTO_INCREMENT=0;";
-                
+
                 cmd.ExecuteNonQuery();
             }
 
-            if(checkTableExists(conn, "lex_res"))
+            if (checkTableExists(conn, "lex_res"))
                 Console.WriteLine($"La tabella 'lex_res' esiste nel database '{conn.Database}'.");
             else
             {
@@ -392,7 +376,9 @@ namespace HelloWorld
 
         public static void UploadPostgres(Dictionary<string, Dictionary<string, double>> lemmi, string sentimento, List<TweetData> ProcessedTweets)
         {
-            MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+            //MySqlConnection conn = new MySqlConnection("server=localhost;user=alfredo;pwd=password;database=maadb");
+            MySqlConnection conn = new MySqlConnection("server=localhost;user=artorias;pwd=password;database=world");
+
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
             conn.Open();
@@ -400,14 +386,14 @@ namespace HelloWorld
 
             string insertSentiment = "INSERT INTO sentiment (name) " +
                                         "VALUES (@name)";
-            
+
             command = new MySqlCommand(insertSentiment, conn);
             command.Parameters.AddWithValue("@name", sentimento);
             command.ExecuteNonQuery();
             command.Parameters.RemoveAt("@name");
 
             string insertLexRes = "INSERT INTO lex_res (lemma, emo_sn, senti_sense, nrc, sentiment_id, frequency, AFINN, ANEWARO, ANEWDOM, ANEWPLEAS) " +
-                                        "SELECT @lemma, @emo_sn, @senti_sense, @nrc, s.id, @frequency, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS "+
+                                        "SELECT @lemma, @emo_sn, @senti_sense, @nrc, s.id, @frequency, @AFINN, @ANEWARO, @ANEWDOM, @ANEWPLEAS " +
                                         "FROM sentiment s " +
                                         "WHERE s.name = @name";
             //string innerDictQuery = "INSERT INTO tavoletta (risorsa, value, lemma_id) VALUES (@EmoSN, @SentiSense, @NRC, @AFINN, @ANEW, @Frquency);";
@@ -450,7 +436,7 @@ namespace HelloWorld
             }
 
             string insertLexResTot = "INSERT INTO lex_res_totals (sentiment_id, emo_sn, senti_sense, nrc) " +
-                                        "SELECT s.id, @emo_sn, @senti_sense, @nrc "+
+                                        "SELECT s.id, @emo_sn, @senti_sense, @nrc " +
                                         "FROM sentiment s " +
                                         "WHERE s.name = @name";
 
@@ -472,14 +458,14 @@ namespace HelloWorld
             command.Parameters.RemoveAt("@name");
 
             string insertTweet = "INSERT INTO tweet (text, sentiment_id) " +
-                                        "SELECT @text, s.id "+
+                                        "SELECT @text, s.id " +
                                         "FROM sentiment s " +
                                         "WHERE s.name = @name";
 
             command = new MySqlCommand(insertTweet, conn);
 
             string insertToken = "INSERT INTO token (token, type, frequency, sentiment_id) " +
-                                        "SELECT @token, @type, @frequency, s.id "+
+                                        "SELECT @token, @type, @frequency, s.id " +
                                         "FROM sentiment s " +
                                         "WHERE s.name = @name";
 
@@ -491,7 +477,7 @@ namespace HelloWorld
             {
                 foreach (string lemma in tweet.Lemmi)
                     tweetComplete = string.Concat(tweetComplete, " ", lemma);
-                
+
                 command.Parameters.AddWithValue("@text", tweetComplete);
                 command.Parameters.AddWithValue("@name", sentimento);
 
@@ -519,6 +505,35 @@ namespace HelloWorld
                     }
             }
 
+            string insertPercent = "INSERT INTO percentages (sentiment, perc_presence_emo_sn, perc_presence_sn_in_tokens, perc_presence_senti_sense, perc_presence_sense_tokens, perc_presence_nrc, perc_presence_nrc_tokens) " +
+                                        "VALUES (@sentiment, @perc_presence_emo_sn, @perc_presence_sn_in_tokens, @perc_presence_senti_sense, @perc_presence_sense_tokens, @perc_presence_nrc, @perc_presence_nrc_tokens)";
+
+            command = new MySqlCommand(insertPercent, conn);
+
+            foreach (Emotions em in Enum.GetValues(typeof(Emotions)))
+            {
+                if (em.ToString().Equals(sentimento))
+                {
+                    command.Parameters.AddWithValue("@sentiment", sentimento);
+                    command.Parameters.AddWithValue("@perc_presence_emo_sn", CalcoloPercPresLexs(em, Resources.EmoSN));
+                    command.Parameters.AddWithValue("@perc_presence_sn_in_tokens", CalcoloPercPresTwitter(em, Resources.EmoSN));
+                    command.Parameters.AddWithValue("@perc_presence_senti_sense", CalcoloPercPresLexs(em, Resources.sentisense));
+                    command.Parameters.AddWithValue("@perc_presence_sense_tokens", CalcoloPercPresTwitter(em, Resources.sentisense));
+                    command.Parameters.AddWithValue("@perc_presence_nrc", CalcoloPercPresLexs(em, Resources.NRC));
+                    command.Parameters.AddWithValue("@perc_presence_nrc_tokens", CalcoloPercPresTwitter(em, Resources.NRC));
+
+                    command.ExecuteNonQuery();
+
+                    command.Parameters.RemoveAt("@sentiment");
+                    command.Parameters.RemoveAt("@perc_presence_emo_sn");
+                    command.Parameters.RemoveAt("@perc_presence_sn_in_tokens");
+                    command.Parameters.RemoveAt("@perc_presence_senti_sense");
+                    command.Parameters.RemoveAt("@perc_presence_sense_tokens");
+                    command.Parameters.RemoveAt("@perc_presence_nrc");
+                    command.Parameters.RemoveAt("@perc_presence_nrc_tokens");
+                }
+            }
+
             conn.Close();
         }
 
@@ -529,12 +544,11 @@ namespace HelloWorld
             cmd.Connection = conn;
             conn.Open();
 
-            cmd.CommandText = "drop table common_words;" +
-                                "drop table lex_res;" +
+            cmd.CommandText = "drop table lex_res;" +
                                 "drop table lex_res_totals;" +
                                 "drop table percentages;" +
                                 "drop table token;" +
-                                "drop table tweet;" + 
+                                "drop table tweet;" +
                                 "drop table sentiment;";
 
             cmd.ExecuteNonQuery();
@@ -652,7 +666,6 @@ namespace HelloWorld
             //var lemmi = LemmasToDictionary(data.Sentimento);
             var sentimento = data.Sentimento;
             var tokens = data.Tokens;
-
             Dictionary<string, int> innerDictionaryHashtag = tokens[Tokens.hashtag];
             Dictionary<string, int> innerDictionaryEmoji = tokens[Tokens.emoji];
             Dictionary<string, int> innerDictionaryEmoticon = tokens[Tokens.emoticon];
@@ -867,8 +880,8 @@ namespace HelloWorld
             return lemmi;
         }
 
-        public static List<TweetData> TweetProcessing(Emotions em, 
-                                                    Dictionary<string, string> splittedSlagWords, 
+        public static List<TweetData> TweetProcessing(Emotions em,
+                                                    Dictionary<string, string> splittedSlagWords,
                                                     string[] splittedEmoticons,
                                                     string[] splittedEmoji)
         {
@@ -902,7 +915,7 @@ namespace HelloWorld
 
                 //rimozione parole che negano
                 tokensNLPList.RemoveAll(negWords.Contains);
-                
+
                 //sostituzione slag words
                 foreach (var kv in splittedSlagWords)
                 {
@@ -1081,7 +1094,7 @@ namespace HelloWorld
         }
 
 
-        public static void CalcoloPercPresTwitter(Emotions em, object res)
+        public static double? CalcoloPercPresTwitter(Emotions em, object res)
         {
             string reso = "";
             if (res is Resources)
@@ -1100,17 +1113,23 @@ namespace HelloWorld
                 // Ad esempio, esegui un conteggio di parole con em e altResource
                 reso = resource.ToString();
             }
+
             int N_twitter_words = getTweetTotalWords(em);
-            int N_shared_words = getSharedWordsCount(em, reso);
 
+            if (File.Exists($"Risorse lessicali/{em}/" + reso + $"_{em}.txt"))
+            {
+                int N_shared_words = getSharedWordsCount(em, reso);
+                double perc_presence_twitter = (double)N_shared_words / (double)N_twitter_words;
 
-            double perc_presence_twitter = (double)N_shared_words / (double)N_twitter_words;
-            Console.WriteLine(Math.Round(perc_presence_twitter * 100, 2) + " %");
-            //return perc_presence_twitter;
+                Console.WriteLine(Math.Round(perc_presence_twitter * 100, 2) + " %");
 
+                return Math.Round(perc_presence_twitter * 100, 2);
+            }
+
+            return null;
         }
 
-        public static void CalcoloPercPresLexs(Emotions em, object res)
+        public static double? CalcoloPercPresLexs(Emotions em, object res)
         {
             string reso = "";
             if (res is Resources)
@@ -1129,14 +1148,21 @@ namespace HelloWorld
                 // Ad esempio, esegui un conteggio di parole con em e altResource
                 reso = resource.ToString();
             }
-            int N_shared_words_unique = getUniqueLemmasInTweets(em, reso);
-            int N_lex_words = getLexResTotalElements(em, reso);
 
+            if (File.Exists($"Risorse lessicali/{em}/" + reso + $"_{em}.txt"))
+            {
+                int N_shared_words_unique = getUniqueLemmasInTweets(em, reso);
+                int N_lex_words = getLexResTotalElements(em, reso);
 
-            double perc_presence_lex = (double)N_shared_words_unique / (double)N_lex_words;
+                double perc_presence_lex = (double)N_shared_words_unique / (double)N_lex_words;
 
-            Console.WriteLine(Math.Round(perc_presence_lex * 100, 2) + " %");
-        }
+                Console.WriteLine(Math.Round(perc_presence_lex * 100, 2) + " %");
+
+                return Math.Round(perc_presence_lex * 100, 2);
+            }
+
+            return null;
+        }
 
         public static string[] POStagger(string text)
         {
@@ -1260,11 +1286,11 @@ namespace HelloWorld
         public static void generateWordCloud(IList<string> words, IList<int> frequenze)
         {
 
-            var wordCloud = new WordCloud(1300, 1000, useRank: true, fontColor: Color.Blue, allowVerical: true, fontname: "YouYuan");
+            // var wordCloud = new WordCloud(1300, 1000, useRank: true, fontColor: Color.Blue, allowVerical: true, fontname: "YouYuan");
 
-            var image = wordCloud.Draw(words, frequenze);
+            // var image = wordCloud.Draw(words, frequenze);
 
-            image.Save("word_cloud.png");
+            // image.Save("word_cloud.png");
         }
 
         public static void generateWordsFrequenciesFiles(List<BsonDocument> docs)
@@ -1320,7 +1346,7 @@ namespace HelloWorld
 
         public static void generateEmojiFrequenciesFiles(List<BsonDocument> docs)
         {
-            List<string> words = new List<string>();
+            List<string>? words = new List<string>();
             List<int> frequenze = new List<int>();
 
             foreach (var document in docs)
@@ -1355,7 +1381,7 @@ namespace HelloWorld
 
         public static void generateEmoticonsFrequenciesFiles(List<BsonDocument> docs)
         {
-            List<string> words = new List<string>();
+            List<string>? words = new List<string>();
             List<int> frequenze = new List<int>();
 
             foreach (var document in docs)
@@ -1401,13 +1427,11 @@ namespace HelloWorld
             });
 
             return output;
-        }
-    
+        }
+
         public static void TweetSerializer(List<TweetData> par)
         {
             // Specifica il percorso del tuo script Python
-            string pythonScriptPath = "codice\\script.py";
-
             string json = JsonSerializer.Serialize(par);
 
             string filePath = "input.json";
@@ -1469,5 +1493,19 @@ namespace HelloWorld
 
             process.WaitForExit();
         }
+
+        public static List<TweetData> Lemmatizer(List<TweetData> ProcessedTweets)
+        {
+            TweetSerializer(ProcessedTweets);
+            Thread.Sleep(8000);
+
+            RunPythonScript("codice\\script.py");
+            Thread.Sleep(8000);
+
+            ProcessedTweets = SerializingBack();
+
+            return ProcessedTweets;
+        }
+
     }
 }

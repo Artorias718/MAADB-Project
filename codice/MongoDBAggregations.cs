@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using static HelloWorld.Utils;
@@ -36,11 +32,8 @@ namespace HelloWorld
                 })
             };
 
-            // Esecuzione dell'aggregazione
-            // Esecuzione dell'aggregazione
             var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
 
-            // Iterazione sui risultati
             foreach (var document in result)
             {
                 string? hashtag = document["_id"].ToString();
@@ -299,5 +292,73 @@ namespace HelloWorld
 
             return results.GetValue("num_words").AsInt32;
         }
+
+        public static void getNewResources(Emotions em)
+        {
+
+            string connectionString = "mongodb://localhost:27017";
+            MongoClient client = new MongoClient(connectionString);
+
+            string databaseName = "Twitter";
+            string collectionName = "Tweet";
+
+
+            IMongoDatabase database = client.GetDatabase(databaseName);
+
+            var collection = database.GetCollection<BsonDocument>(collectionName);
+            var pipeline = new List<BsonDocument>
+                {
+                    new BsonDocument
+                    {
+                        { "$match", new BsonDocument("id", em.ToString()) }
+                    },
+                    new BsonDocument("$unwind", "$words"),
+                    new BsonDocument
+                    {
+                        { "$match", new BsonDocument("words.lex_res_reference", new BsonDocument("$exists", false)) }
+                    },
+                    new BsonDocument
+                    {
+                        { "$group", new BsonDocument
+                            {
+                                { "_id", "$words.lemma" },
+                                { "frequenza", new BsonDocument("$sum", 1) }
+                            }
+                        }
+                    },
+                    new BsonDocument
+                    {
+                        { "$match", new BsonDocument("frequenza", new BsonDocument("$gt", 800)) }
+                    },
+                    new BsonDocument
+                    {
+                        { "$project", new BsonDocument
+                            {
+                                { "_id", 0 },
+                                { "parola", "$_id" },
+                                { "frequenza", 1 }
+                            }
+                        }
+                    }
+                };
+
+            var result = collection.Aggregate<BsonDocument>(pipeline).ToList();
+
+            string nomeFile = $"nuova_risorsa_{em.ToString()}.txt";
+
+            // Creazione del file e scrittura dei risultati
+            using (StreamWriter writer = new StreamWriter(nomeFile))
+            {
+                foreach (var document in result)
+                {
+                    string parola = document.GetValue("parola").AsString;
+                    int frequenza = document.GetValue("frequenza").AsInt32;
+                    writer.WriteLine($"{parola}, {frequenza}");
+                }
+            }
+
+            Console.WriteLine("Risultato salvato in nuova_risorsa.txt");
+        }
+
     }
 }

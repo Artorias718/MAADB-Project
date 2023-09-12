@@ -11,6 +11,7 @@ using System.Reflection;
 using static HelloWorld.Utils;
 using static HelloWorld.MongoDBAggregations;
 
+
 namespace HelloWorld
 {
     class Program
@@ -22,7 +23,6 @@ namespace HelloWorld
             string[] splittedEmoticons = splittedEmoticonPos.Concat(splittedEmoticonNeg).ToArray();
 
             Dictionary<string, string> splittedSlagWords = ExtractSlagWords("Risorse lessicali/slag_words.txt");
-            //Dictionary<string, string> slagWords = Utils.swapSlagWords("Risorse lessicali/slag_words.txt");
 
             string[] splittedEmojiNeg = ExtractEmoji("Risorse lessicali/EmojiNeg.txt");
             string[] splittedEmojiPos = ExtractEmoji("Risorse lessicali/EmojiPos.txt");
@@ -43,10 +43,10 @@ namespace HelloWorld
             {
                 List<TweetData> ProcessedTweets = TweetProcessing(em, splittedSlagWords, splittedEmoticons, splittedEmoji);
                 int count = 1;
-                //var lemmi = LemmasToDictionary(em);
+                var lemmi = LemmasToDictionary(em);
 
-                //Utils.createTablesPostgres();
-                //Utils.UploadPostgres(lemmi, em.ToString(), ProcessedTweets);
+                //createTablesPostgres();
+                UploadPostgres(lemmi, em.ToString(), ProcessedTweets);
 
                 //Utils.DeleteDatabase();
 
@@ -55,13 +55,11 @@ namespace HelloWorld
                 //UploadLexResourcesMongoDB(em);
                 //UploadLexResourcesWordsMongoDB(em);
 
-                //********************************************  Funzioni NLP 
-                //Utils.TweetSerializer(ProcessedTweets);
-                //RunPythonScript("codice\\script.py");
+                //********************************************Funzioni NLP
 
-                //ProcessedTweets = Utils.SerializingBack();
+                //ProcessedTweets = Lemmatizer(ProcessedTweets);
 
-                // //********************************************  Funzioni per il caricamento tweets su mongoDB    
+                //********************************************Funzioni per il caricamento tweets su mongoDB
 
                 // List<BsonDocument> documentsToInsert = new List<BsonDocument>();
 
@@ -95,20 +93,23 @@ namespace HelloWorld
 
                 //***********************************************   Funzioni per il calcllo dei dati delle words clouds 
 
-                // getHashtagFrequencies(em);
+                //getHashtagFrequencies(em);
                 // getEmojiFrequencies(em);
                 // getEmoticonsFrequencies(em);
                 // getWordsFrequencies(em);
 
                 //*********************************************** Funzioni per il calcolo percentuali per istogrammi 
 
-                CalcoloPercPresLexs(Emotions.anger, Resources.EmoSN);
-                CalcoloPercPresLexs(Emotions.anger, Resources.sentisense);
-                CalcoloPercPresLexs(Emotions.anger, Resources.NRC);
+                // CalcoloPercPresLexs(em, Resources.EmoSN);
+                // CalcoloPercPresLexs(em, Resources.sentisense);
+                // CalcoloPercPresLexs(em, Resources.NRC);
 
-                //CalcoloPercentuale(Emotions.joy, Resources.EmoSN);
+                // CalcoloPercPresTwitter(em, Resources.EmoSN);
+                // CalcoloPercPresTwitter(em, Resources.sentisense);
+                // CalcoloPercPresTwitter(em, Resources.NRC);
 
-                //Utils2.Lemming("cats");
+                //sgetNewResources(em);
+
             }
         }
     }
